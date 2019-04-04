@@ -1,0 +1,23 @@
+{
+  "name": "chesstron",
+  "version": "1.0.0",
+  "description": "A chess program using electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/jchip/chesstron.git",
+  "keywords": [
+    "Electron",
+    "chess"
+  ],
+  "author": "Joel Chen",
+  "license": "unlicensed",
+  "devDependencies": {
+    "electron": "^4.1.1",
+    "electron-rebuild": "^1.8.4"
+  },
+  "dependencies": {
+    "dgtchess": "../node-dgtchess"
+  }
+}
