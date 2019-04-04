@@ -2,7 +2,7 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const startChess = require("dgtchess/index");
+const { startChess, connectDgtBoard } = require("dgtchess/index");
 
 const unicodePieces = {
   K: "\u2654",
@@ -19,20 +19,38 @@ const unicodePieces = {
   p: "\u265F"
 };
 
-const updateBoard = raw => {
+const updateBoard = (raw, prev) => {
   const board = document.getElementById("board");
   const html = [];
 
   let rSqColor;
   let cSqColor;
+  let piece;
+  let pieceColor = "";
   let ix = 0;
   for (let rx = 0; rx < 8; rx++) {
     rSqColor = rSqColor !== "white" ? "white" : "gray";
     cSqColor = rSqColor;
     for (let cx = 0; cx < 8; cx++, ix++) {
-      html.push(`<div class="${cSqColor} square">`);
-      if (raw[ix] !== ".") {
-        html.push(unicodePieces[raw[ix]]);
+      const ap = raw[ix];
+      piece = ap;
+
+      if (prev) {
+        const bp = prev[ix];
+        pieceColor = "";
+        if (bp !== ap) {
+          if (ap !== ".") {
+            pieceColor = " green";
+          } else {
+            piece = bp;
+            pieceColor = " magenta";
+          }
+        }
+      }
+
+      html.push(`<div class="${cSqColor} square${pieceColor}">`);
+      if (piece !== ".") {
+        html.push(unicodePieces[piece]);
       }
       html.push(`</div>`);
       cSqColor = cSqColor !== "white" ? "white" : "gray";
@@ -43,14 +61,31 @@ const updateBoard = raw => {
 };
 
 async function start() {
-  const game = await startChess();
+  const board = await connectDgtBoard();
+  updateBoard(board.toString());
+  const game = await startChess(board);
+  const onChanged = () => {
+    updateBoard(game._board.toString());
+  };
+
+  game.on("wait-start", onChanged);
+
   game.on("ready", () => {
-    const raw = game._board.toString();
+    const raw = game._chess.toString();
+    document.getElementById("status").innerText = game.turnColor + " turn";
     updateBoard(raw);
   });
 
-  game._board.on("changed", () => {
-    updateBoard(game._board.toString());
+  game.on("player-moved", () => {
+    const raw = game._chess.toString();
+    document.getElementById("status").innerText = game.turnColor + " turn";
+    updateBoard(raw);
+  });
+
+  game.on("waiting-board-sync", ({ move, beforeRaw }) => {
+    document.getElementById("status").innerText =
+      "SAN: " + move.san + " position " + move.from + "-> " + move.to;
+    updateBoard(game._chess.toString(), beforeRaw);
   });
 }
 
