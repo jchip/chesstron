@@ -4,17 +4,12 @@
     <meta charset="UTF-8" />
     <title>Chess</title>
     <style>
-      .flex-grid {
-        display: flex;
-      }
-
       .col {
         flex: 1;
       }
 
       .board-container {
         display: flex;
-        margin-top: 100px;
         margin-right: 50%;
       }
 
@@ -23,6 +18,7 @@
         flex-direction: row;
         flex-wrap: wrap;
         max-height: 528px;
+        background: transparent;
       }
 
       .chess-board {
@@ -51,7 +47,7 @@
         border: transparent 9px solid;
         min-width: 32px;
         min-height: 496px;
-        max-width: 32px;
+        max-width: 62px;
         max-height: 496px;
         margin-right: 0px;
         margin: 0px;
@@ -69,7 +65,7 @@
         min-width: 496px;
         min-height: 32px;
         max-width: 496px;
-        max-height: 32px;
+        max-height: 62px;
         margin-right: 0px;
         margin: 0px;
         padding: 0px;
@@ -124,27 +120,51 @@
       .green {
         color: green;
       }
+
+      .opponent-avatar {
+        min-width: 350px;
+      }
+
+      .play-info {
+        min-width: 100%;
+      }
+
+      .status {
+        font-size: 2em;
+      }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet" />
   </head>
-  <body>
-    <div class="flex-grid">
-      <div class="col oponent-avatar">
-        <img src="http://clipart-library.com/images/rinr6kRnT.gif" />
-      </div>
-      <div class="col board-container">
-        <div class="col chess-rank">
-          <div class="white square rank">8</div>
-          <div class="white square rank">7</div>
-          <div class="white square rank">6</div>
-          <div class="white square rank">5</div>
-          <div class="white square rank">4</div>
-          <div class="white square rank">3</div>
-          <div class="white square rank">2</div>
-          <div class="white square rank">1</div>
+  <body background="/assets/tree-in-forest.jpg">
+    <div>
+      <div>
+        <div id="controls">
+          <button
+            id="new-game"
+            class="bg-white hover:bg-grey-lightest text-grey-darkest font-semibold py-2 px-4 border border-grey-light rounded shadow"
+          >
+            New Game
+          </button>
         </div>
-        <div class="col board-with-file">
-          <div id="board" class="col chess-board">
-            <!-- <div class="white square">♔</div>
+      </div>
+      <div class="flex">
+        <div class="col opponent-avatar">
+          <img src="/assets/tweety/rinr6kRnT.gif" />
+        </div>
+        <div class="col board-container">
+          <div class="col chess-rank">
+            <div class="square rank">8</div>
+            <div class="square rank">7</div>
+            <div class="square rank">6</div>
+            <div class="square rank">5</div>
+            <div class="square rank">4</div>
+            <div class="square rank">3</div>
+            <div class="square rank">2</div>
+            <div class="square rank">1</div>
+          </div>
+          <div class="col board-with-file">
+            <div id="board" class="chess-board">
+              <!-- <div class="white square">♔</div>
         <div class="gray square">♚</div>
         <div class="white square">♚</div>
         <div class="gray square">♔</div>
@@ -152,25 +172,26 @@
         <div class="gray square ">♔</div>
         <div class="white square">♚</div>
         <div class="gray square">♚</div> -->
-          </div>
-          <div class="chess-file">
-            <div class="white square file">a</div>
-            <div class="white square file">b</div>
-            <div class="white square file">c</div>
-            <div class="white square file">d</div>
-            <div class="white square file">e</div>
-            <div class="white square file">f</div>
-            <div class="white square file">g</div>
-            <div class="white square file">h</div>
+            </div>
+            <div class="chess-file">
+              <div class="square file">a</div>
+              <div class="square file">b</div>
+              <div class="square file">c</div>
+              <div class="square file">d</div>
+              <div class="square file">e</div>
+              <div class="square file">f</div>
+              <div class="square file">g</div>
+              <div class="square file">h</div>
+            </div>
+            <div class="play-info">
+              <div class="bg-blue-lightest border-t border-b border-blue text-blue-dark px-4 py-3">
+                <div id="status" class="status">waiting for board ready</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div>
-      <div id="status">waiting for board ready</div>
-    </div>
-
     <script>
       // You can also require other files to run in this process
       require("./renderer.js");

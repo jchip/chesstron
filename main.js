@@ -1,14 +1,35 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require("electron");
+const url = require("url");
+const path = require("path");
+const electron = require("electron");
+const { app, BrowserWindow } = electron;
+
+app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
 function createWindow() {
+  const PROTOCOL = "file";
+
+  electron.protocol.interceptFileProtocol(PROTOCOL, (request, callback) => {
+    // // Strip protocol
+    let url = request.url.substr(PROTOCOL.length + 1);
+
+    // Build complete path for node require function
+    url = path.join(__dirname, url);
+
+    // Replace backslashes by forward slashes (windows)
+    // url = url.replace(/\\/g, '/');
+    url = path.normalize(url);
+
+    callback({ path: url });
+  });
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1100,
+    width: 1150,
     height: 900,
     webPreferences: {
       nodeIntegration: true
@@ -16,7 +37,15 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile("index.html");
+  // mainWindow.loadFile("index.html");
+
+  mainWindow.loadURL(
+    url.format({
+      pathname: "index.html",
+      protocol: PROTOCOL + ":",
+      slashes: true
+    })
+  );
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
