@@ -3,6 +3,7 @@ const url = require("url");
 const path = require("path");
 const electron = require("electron");
 const { app, BrowserWindow } = electron;
+const scanDir = require("filter-scan-dir");
 
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 
@@ -17,6 +18,8 @@ function initialize() {
     app.quit();
     return;
   }
+
+  loadDemos();
 
   function createWindow() {
     // Create the browser window.
@@ -80,6 +83,18 @@ function initialize() {
     if (mainWindow === null) {
       createWindow();
     }
+  });
+}
+
+// Require each JS file in the main-process dir
+function loadDemos() {
+  const files = scanDir.sync({
+    dir: path.join(__dirname, "main-process"),
+    includeRoot: true,
+    filterExt: [".js"]
+  });
+  files.forEach(file => {
+    require(file);
   });
 }
 
