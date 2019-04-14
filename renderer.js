@@ -116,7 +116,7 @@ async function start() {
         lastPlayed = name;
       }
       const sound = sounds[name];
-      const audio = new Audio(`/assets/${folder}/audio/${sound}`);
+      const audio = new Audio(`assets/${folder}/audio/${sound}`);
       audioPlaying = true;
       audio.play();
       audio.onended = () => {
