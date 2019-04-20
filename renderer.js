@@ -89,7 +89,9 @@ const tweetySounds = {
 async function start() {
   const board = await connectDgtBoard();
 
-  const game = await startChess(board);
+  let game;
+
+  game = await startChess(null, board);
   const onChanged = positions => {
     updateBoard(game._board.toString(), null, positions.wantRaw);
   };
@@ -172,8 +174,11 @@ async function start() {
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
   });
 
-  document.getElementById("new-tournament").addEventListener("click", () => {
-    location.reload();
+  document.getElementById("new-tournament").addEventListener("click", async () => {
+    console.log("new tournament");
+    await game.reset();
+
+    await startChess(game, board);
   });
 }
 
