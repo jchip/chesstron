@@ -18,7 +18,7 @@
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
-    "dgtchess": "jchip/node-dgtchess",
+    "dgt-board": "jchip/dgt-board",
     "filter-scan-dir": "^1.0.10"
   }
 }

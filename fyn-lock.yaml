@@ -498,10 +498,10 @@ buffer-from:
 camelcase:
  _:
   ^2.0.0: 2.1.1
-  ^5.0.0: 5.3.0
- 5.3.0:
-  $: sha512-Y05ICatFYPAfykDIB7VdwSJ0LUl1yq/BwO2OpyGGLjiRe1fgzTwVypPiWnzkGFOVFHXrCXUNBl86bpjBhZWSJg==
-  _: 'https://registry.npmjs.org/camelcase/-/camelcase-5.3.0.tgz'
+  ^5.0.0: 5.3.1
+ 5.3.1:
+  $: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
+  _: 'https://registry.npmjs.org/camelcase/-/camelcase-5.3.1.tgz'
  2.1.1:
   $: sha1-fB0W1nmhu+WcoCys7PsBHiAfWh8=
   _: 'https://registry.npmjs.org/camelcase/-/camelcase-2.1.1.tgz'
@@ -530,12 +530,12 @@ chalk:
    ansi-styles: ^3.2.1
    escape-string-regexp: ^1.0.5
    supports-color: ^5.3.0
-chess.js:
+chess-js:
  _:
-  ../chess.js: 0.10.3-dev-fynlocal_h
- 0.10.3-dev-fynlocal_h:
-  $: local
-  _: ..\chess.js
+  jchip/chess-js: 0.10.3
+ 0.10.3:
+  $: sha512-Kcgf1H/RfoCZ7jf2ywMzfx3v8qY4KYWVa4oAoK4MIkmxocspyk0UPRb5x02snt/edRJ0o/HzvyAwlbKirSIRNA==
+  _: '~url-spec~{"urlType":"github","semver":"jchip/chess-js","_resolved":"github:jchip/chess-js#5310751ceb63a11226bcac6f1f18063822e1897c"}'
 choices-separator:
  _:
   ^2.0.0: 2.0.0
@@ -562,10 +562,10 @@ cli-cursor:
    restore-cursor: ^2.0.0
 cli-spinners:
  _:
-  ^2.0.0: 2.0.0
- 2.0.0:
-  $: sha512-yiEBmhaKPPeBj7wWm4GEdtPZK940p9pl3EANIrnJ3JnvWyrPjcFcsEq6qRUuQ7fzB0+Y82ld3p6B34xo95foWw==
-  _: 'https://registry.npmjs.org/cli-spinners/-/cli-spinners-2.0.0.tgz'
+  ^2.0.0: 2.1.0
+ 2.1.0:
+  $: sha512-8B00fJOEh1HPrx4fo5eW16XmE1PcL1tGpGrxy63CXGP9nHdPBN63X75hA1zhvQuhVztJWLqV58Roj2qlNM7cAA==
+  _: 'https://registry.npmjs.org/cli-spinners/-/cli-spinners-2.1.0.tgz'
 cliui:
  _:
   ^4.0.0: 4.1.0
@@ -646,10 +646,10 @@ combined-stream:
    delayed-stream: ~1.0.0
 commander:
  _:
-  ^2.13.0: 2.19.0
- 2.19.0:
-  $: sha512-6tvAOO+D6OENvRAh524Dh9jcfKTYDQAqvqezbCW82xj5X0pSrcpxtvRKHLG0yBY6SD7PSDrJaj+0AiOcKVd1Xg==
-  _: 'https://registry.npmjs.org/commander/-/commander-2.19.0.tgz'
+  ^2.13.0: 2.20.0
+ 2.20.0:
+  $: sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
+  _: 'https://registry.npmjs.org/commander/-/commander-2.20.0.tgz'
 component-emitter:
  _:
   ^1.2.1: 1.2.1
@@ -812,16 +812,16 @@ detect-libc:
  1.0.3:
   $: sha1-+hN8S9aY7fVc1c0CrFWfkaTEups=
   _: 'https://registry.npmjs.org/detect-libc/-/detect-libc-1.0.3.tgz'
-dgtchess:
+dgt-board:
  _:
-  ../node-dgtchess: 0.1.2-fynlocal_h
- 0.1.2-fynlocal_h:
+  jchip/dgt-board: 0.1.2
+ 0.1.2:
   top: 1
-  $: local
-  _: ..\node-dgtchess
+  $: sha512-UKEoMbMpRyuBpgHOnidgeDePVMqqlKvAPJJufS/pWE97T2Y69P+1+ZpOtXXKAXJYIFSzp1RjounnGolf+sT1tg==
+  _: '~url-spec~{"urlType":"github","semver":"jchip/dgt-board","_resolved":"github:jchip/dgt-board#985681e01edb602282b1cdcb61011bfdf9db8b8c"}'
   dependencies:
    chalk: ^2.4.2
-   chess.js: ../chess.js
+   chess-js: jchip/chess-js
    lodash: ^4.17.11
    node-uci: ^1.3.1
    serialport: ^6.2.1
@@ -836,12 +836,12 @@ ecc-jsbn:
    safer-buffer: ^2.1.0
 electron:
  _:
-  ^4.1.1: 4.1.3
- 4.1.3:
+  ^4.1.1: 4.1.4
+ 4.1.4:
   top: 1
   hasI: 1
-  $: sha512-oOeuA+BAydrMcKGBu4GEJfgAtaRd189SabE8V9koAH/sUiTHYroWtwRzA6V24JFa/dCJAHNjVD8F4qSMybxzrA==
-  _: 'https://registry.npmjs.org/electron/-/electron-4.1.3.tgz'
+  $: sha512-MelOjntJvd33izEjR6H4N/Uii7y535z/b2BuYXJGLNSHL6o1IlyhUQmfiT87kWABayERgeuYERgvsyf956OOFw==
+  _: 'https://registry.npmjs.org/electron/-/electron-4.1.4.tgz'
   dependencies:
    '@types/node': ^10.12.18
    electron-download: ^4.1.0
@@ -984,6 +984,13 @@ fd-slicer:
   _: 'https://registry.npmjs.org/fd-slicer/-/fd-slicer-1.0.1.tgz'
   dependencies:
    pend: ~1.2.0
+filter-scan-dir:
+ _:
+  ^1.0.10: 1.0.10
+ 1.0.10:
+  top: 1
+  $: sha512-tuDUZPwDmWULMdJ0CopxwRsHuBq2LAwf2zcNMu0LEXD6V414jwrexMaPRS68/ct0ma2m6EREln8n5jYClvggZQ==
+  _: 'https://registry.npmjs.org/filter-scan-dir/-/filter-scan-dir-1.0.10.tgz'
 find-up:
  _:
   ^1.0.0: 1.1.2
@@ -1838,16 +1845,16 @@ onetime:
    mimic-fn: ^1.0.0
 ora:
  _:
-  ^3.0.0: 3.3.0
- 3.3.0:
-  $: sha512-DTFh3rat9CftF9ldG++sa7ci6KocASWvm6aqNzuXnl8uNCkDprM39f8oZwnXnWoNIcbLYeBuPrruQ4+0+Bf0PA==
-  _: 'https://registry.npmjs.org/ora/-/ora-3.3.0.tgz'
+  ^3.0.0: 3.4.0
+ 3.4.0:
+  $: sha512-eNwHudNbO1folBP3JsZ19v9azXWtQZjICdr3Q0TDPIaeBQ3mXLrh54wM+er0+hSp+dWKf+Z8KM58CYzEyIYxYg==
+  _: 'https://registry.npmjs.org/ora/-/ora-3.4.0.tgz'
   dependencies:
    chalk: ^2.4.2
    cli-cursor: ^2.1.0
    cli-spinners: ^2.0.0
    log-symbols: ^2.2.0
-   strip-ansi: ^5.0.0
+   strip-ansi: ^5.2.0
    wcwidth: ^1.0.1
 os-homedir:
  _:
@@ -1894,10 +1901,10 @@ p-finally:
   _: 'https://registry.npmjs.org/p-finally/-/p-finally-1.0.0.tgz'
 p-is-promise:
  _:
-  ^2.0.0: 2.0.0
- 2.0.0:
-  $: sha512-pzQPhYMCAgLAKPWD2jC3Se9fEfrD9npNos0y150EeqZll7akhEgGhTW/slB6lHku8AvYGiJ+YJ5hfHKePPgFWg==
-  _: 'https://registry.npmjs.org/p-is-promise/-/p-is-promise-2.0.0.tgz'
+  ^2.0.0: 2.1.0
+ 2.1.0:
+  $: sha512-Y3W0wlRPK8ZMRbNq97l4M5otioeA5lm1z7bkNkxCka8HSPjR0xRWmpCmc9utiaLP9Jb1eD8BgeIxTW4AIF45Pg==
+  _: 'https://registry.npmjs.org/p-is-promise/-/p-is-promise-2.1.0.tgz'
 p-limit:
  _:
   ^2.0.0: 2.2.0
@@ -2540,10 +2547,10 @@ spdx-expression-parse:
    spdx-license-ids: ^3.0.0
 spdx-license-ids:
  _:
-  ^3.0.0: 3.0.3
- 3.0.3:
-  $: sha512-uBIcIl3Ih6Phe3XHK1NqboJLdGfwr1UN3k6wSD1dZpmPsIkb8AGNbZYJ1fOBk834+Gxy8rpfDxrS6XLEMZMY2g==
-  _: 'https://registry.npmjs.org/spdx-license-ids/-/spdx-license-ids-3.0.3.tgz'
+  ^3.0.0: 3.0.4
+ 3.0.4:
+  $: sha512-7j8LYJLeY/Yb6ACbQ7F76qy5jHkp0U6jgBfJsk97bwWlVUnUWsAgpyaCvo17h0/RQGnQ036tVDomiwoI4pDkQA==
+  _: 'https://registry.npmjs.org/spdx-license-ids/-/spdx-license-ids-3.0.4.tgz'
 speedometer:
  _:
   ~0.1.2: 0.1.4
@@ -2608,7 +2615,7 @@ strip-ansi:
  _:
   '^3.0.0,^3.0.1': 3.0.1
   ^4.0.0: 4.0.0
-  ^5.0.0: 5.2.0
+  ^5.2.0: 5.2.0
  5.2.0:
   $: sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA==
   _: 'https://registry.npmjs.org/strip-ansi/-/strip-ansi-5.2.0.tgz'

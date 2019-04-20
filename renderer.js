@@ -2,8 +2,8 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const { startChess, connectDgtBoard } = require("dgtchess/index");
-const utils = require("dgtchess/lib/utils");
+const { startChess, connectDgtBoard } = require("dgt-board/index");
+const utils = require("dgt-board/lib/utils");
 
 const unicodePieces = {
   K: "\u2654",
@@ -90,13 +90,18 @@ async function start() {
   const board = await connectDgtBoard();
 
   const game = await startChess(board);
-  const onChanged = () => {
-    updateBoard(game._board.toString(), null, utils.fenToRaw(game._startFen));
+  const onChanged = positions => {
+    updateBoard(game._board.toString(), null, positions.wantRaw);
   };
 
   game.on("wait-start", onChanged);
 
-  onChanged();
+  game.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
+    updateBoard(boardRaw, null, wantRaw);
+    document.getElementById("status").innerText = "take back";
+  });
+
+  onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
 
   let audioPlaying = false;
   let lastPlayed;
@@ -125,20 +130,24 @@ async function start() {
     }
   };
 
-  game.on("ready", () => {
-    const raw = game._chess.toString();
-    playAudio(tweetySounds, "tweety", "I tawt I taw a putty cat");
+  const showTurn = raw => {
+    raw = raw || game._chess.toString();
     document.getElementById("status").innerText = game.turnColor + " turn";
     updateBoard(raw);
+  };
+
+  game.on("ready", () => {
+    playAudio(tweetySounds, "tweety", "I tawt I taw a putty cat");
+    showTurn();
   });
 
+  game.on("board-ready", ({ boardRaw }) => showTurn(boardRaw));
+
   game.on("player-moved", () => {
-    const raw = game._chess.toString();
     if (game.turnColor === "black") {
       playAudio(tweetySounds, "tweety");
     }
-    document.getElementById("status").innerText = game.turnColor + " turn";
-    updateBoard(raw);
+    showTurn();
   });
 
   game.on("waiting-board-sync", ({ move, beforeRaw }) => {
