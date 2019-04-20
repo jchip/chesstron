@@ -100,7 +100,7 @@ async function start() {
 
   game.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
     updateBoard(boardRaw, null, wantRaw);
-    document.getElementById("status").innerText = "take back";
+    document.getElementById("status").innerText = "waiting for take back";
   });
 
   onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
