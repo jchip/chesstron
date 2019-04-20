@@ -188,9 +188,17 @@ async function start() {
   document.getElementById("new-tutorial").addEventListener("click", async () => {
     console.log("new tournament");
     await game.reset();
-    setBanner("Tutorial");
+    setBanner("Training");
 
     await startChess(game, board, { allowTakeback: true });
+  });
+
+  document.addEventListener("keyup", e => {
+    if (e.key === "Backspace") {
+      if (game.turnColor === "white" && game._players.black.allowTakeback()) {
+        game.takeBack();
+      }
+    }
   });
 }
 
