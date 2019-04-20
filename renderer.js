@@ -174,11 +174,23 @@ async function start() {
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
   });
 
+  const setBanner = banner => {
+    document.getElementById("game-banner").innerHTML = banner;
+  };
+
   document.getElementById("new-tournament").addEventListener("click", async () => {
     console.log("new tournament");
     await game.reset();
+    setBanner("Tournament");
+    await startChess(game, board, { allowTakeback: false });
+  });
 
-    await startChess(game, board);
+  document.getElementById("new-tutorial").addEventListener("click", async () => {
+    console.log("new tournament");
+    await game.reset();
+    setBanner("Tutorial");
+
+    await startChess(game, board, { allowTakeback: true });
   });
 }
 

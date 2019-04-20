@@ -817,8 +817,8 @@ dgt-board:
   jchip/dgt-board: 0.1.2
  0.1.2:
   top: 1
-  $: sha512-Xa+6etDDvpvIAfVyTzXaCaumtX4QSCsZVH7mqD/E8jq77wxIl0Zvt+kROtB7vVVmaTr5D44jxgM/8390MGZQcA==
-  _: '~url-spec~{"urlType":"github","semver":"jchip/dgt-board","_resolved":"github:jchip/dgt-board#0604407d8c59d83c13ddc35a0ef902add7dc830d"}'
+  $: sha512-f3veDBKpvbPc/7ZO8iyRW6t8iOxyHHkJGpjc7qgOagOKwLQGP7SIabZh97qMfyX1v8PLy9k9/qWEPa7BrkcLhg==
+  _: '~url-spec~{"urlType":"github","semver":"jchip/dgt-board","_resolved":"github:jchip/dgt-board#82d7321481473698dd1db32348fb72fd6c751099"}'
   dependencies:
    chalk: ^2.4.2
    chess-js: jchip/chess-js
