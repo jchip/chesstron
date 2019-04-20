@@ -172,7 +172,7 @@ async function start() {
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
   });
 
-  document.getElementById("new-game").addEventListener("click", () => {
+  document.getElementById("new-tournament").addEventListener("click", () => {
     location.reload();
   });
 }

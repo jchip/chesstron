@@ -3,21 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <title>Chesstron</title>
-    <style>
-      .col {
-        flex: 1;
-      }
+    <link rel="stylesheet" href="./src/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
+    <link href="./src/tailwind.min.css" rel="stylesheet" />
 
+    <style>
       .board-container {
         display: flex;
-        margin-right: 50%;
+        margin-right: 0%;
       }
 
       .board-with-file {
+        padding: 0;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        max-height: 528px;
+        max-height: 496px;
         background: transparent;
       }
 
@@ -34,7 +34,7 @@
         min-height: 496px;
         max-width: 496px;
         max-height: 496px;
-        margin-right: 50%;
+        margin: 0px;
       }
 
       .chess-rank {
@@ -45,7 +45,7 @@
         align-content: stretch;
         align-items: stretch;
         border: transparent 9px solid;
-        min-width: 32px;
+        min-width: 50px;
         min-height: 496px;
         max-width: 62px;
         max-height: 496px;
@@ -56,7 +56,6 @@
 
       .chess-file {
         display: flex;
-        flex-direction: col;
         flex-wrap: wrap;
         justify-content: left;
         align-content: stretch;
@@ -69,6 +68,7 @@
         margin-right: 0px;
         margin: 0px;
         padding: 0px;
+        border-top: 1px;
       }
 
       .square {
@@ -132,27 +132,72 @@
       .status {
         font-size: 2em;
       }
+
+      .controls {
+        padding: 10px;
+        width: 100%;
+      }
+
+      .control-group {
+        position: relative;
+        display: inline-flex;
+        vertical-align: top;
+        margin: 0px;
+      }
+
+      .game-banner {
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        min-width: 100%;
+        flex-grow: 1;
+        flex-shrink: 0;
+      }
+
+      .container {
+        width: 60%;
+        margin-left: 20%;
+        padding: 0px;
+      }
+
+      .content {
+        min-width: 100%;
+      }
     </style>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet" />
   </head>
   <body background="assets/tree-in-forest.jpg">
-    <div>
-      <div>
-        <div id="controls">
-          <button
-            id="new-game"
-            class="bg-white hover:bg-grey-lightest text-grey-darkest font-semibold py-2 px-4 border border-grey-light rounded shadow"
-          >
-            New Game
-          </button>
+    <div class="container">
+      <div class="flex">
+        <div class="controls" id="controls">
+          <div class="control-group">
+            <div class="dropdown">
+              <button
+                class="btn btn-primary dropdown-toggle btn-lg"
+                type="button"
+                id="dropdownMenuButton"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                New Game
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" id="new-tournament">Tournament</a>
+                <a class="dropdown-item" href="#" id="new-tutorial">Tutorial</a>
+              </div>
+            </div>
+            <div class="alert alert-primary control-group game-banner" id="game-banner">
+              <strong>Tournament</strong>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="flex">
-        <div class="col opponent-avatar">
+      <div class="flex content">
+        <div class="opponent-avatar">
           <img src="assets/tweety/rinr6kRnT.gif" />
         </div>
-        <div class="col board-container">
-          <div class="col chess-rank">
+        <div class="board-container">
+          <div class="chess-rank">
             <div class="square rank">8</div>
             <div class="square rank">7</div>
             <div class="square rank">6</div>
@@ -162,7 +207,7 @@
             <div class="square rank">2</div>
             <div class="square rank">1</div>
           </div>
-          <div class="col board-with-file">
+          <div class="board-with-file">
             <div id="board" class="chess-board">
               <!-- <div class="white square">♔</div>
         <div class="gray square">♚</div>
@@ -192,6 +237,19 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // https://stackoverflow.com/questions/32621988/electron-jquery-is-not-defined
+      if (typeof module === "object") {
+        window.___module = module;
+        module = undefined;
+      }
+    </script>
+    <script src="./src/jquery-3.4.0.slim.js"></script>
+    <script>
+      if (window.module) module = window.___module;
+    </script>
+    <script src="./src/bootstrap-4.3.1-dist/js/bootstrap.bundle.js"></script>
     <script>
       // You can also require other files to run in this process
       require("./renderer.js");
