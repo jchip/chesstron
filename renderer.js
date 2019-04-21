@@ -91,7 +91,7 @@ async function start() {
 
   let game;
 
-  game = await startChess(null, board);
+  game = await startChess(null, board, { allowTakeback: false });
   const onChanged = positions => {
     updateBoard(game._board.toString(), null, positions.wantRaw);
   };
@@ -168,10 +168,12 @@ async function start() {
   });
 
   game.on("illegal-move", ({ move, color }) => {
-    playAudio(tweetyIllegalMoveSounds, "tweety", true);
-    document.getElementById("status").innerHTML = `${color}: \
+    if (color === "white") {
+      playAudio(tweetyIllegalMoveSounds, "tweety", true);
+      document.getElementById("status").innerHTML = `${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
+    }
   });
 
   const setBanner = banner => {
