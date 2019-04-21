@@ -195,7 +195,7 @@ async function start() {
 
   document.addEventListener("keyup", e => {
     if (e.key === "Backspace") {
-      if (game.turnColor === "white" && game._players.black.allowTakeback()) {
+      if (game.turnColor === "white" && game._players && game._players.black.allowTakeback()) {
         game.takeBack();
       }
     }
