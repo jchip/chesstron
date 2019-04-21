@@ -167,12 +167,22 @@ async function start() {
     document.getElementById("status").innerHTML = result;
   });
 
+  let illegal;
+
   game.on("illegal-move", ({ move, color }) => {
     if (color === "white") {
+      illegal = { move, color };
       playAudio(tweetyIllegalMoveSounds, "tweety", true);
       document.getElementById("status").innerHTML = `${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
+    }
+  });
+
+  game._board.on("changed", () => {
+    if (illegal) {
+      illegal = undefined;
+      showTurn();
     }
   });
 
