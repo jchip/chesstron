@@ -17,8 +17,8 @@
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        max-height: 496px;
         background: transparent;
+        max-width: 600px;
       }
 
       .chess-board {
@@ -30,6 +30,7 @@
         align-content: stretch;
         align-items: stretch;
         border: burlywood 9px ridge;
+        box-sizing: content-box;
         min-width: 496px;
         min-height: 496px;
         max-width: 496px;
@@ -45,13 +46,14 @@
         align-content: stretch;
         align-items: stretch;
         border: transparent 9px solid;
-        min-width: 50px;
+        min-width: 32px;
         min-height: 496px;
-        max-width: 62px;
+        max-width: 32px;
         max-height: 496px;
         margin-right: 0px;
         margin: 0px;
         padding: 0px;
+        box-sizing: content-box;
       }
 
       .chess-file {
@@ -69,6 +71,7 @@
         margin: 0px;
         padding: 0px;
         border-top: 1px;
+        box-sizing: content-box;
       }
 
       .square {
@@ -123,10 +126,13 @@
 
       .opponent-avatar {
         min-width: 350px;
+        max-width: 350px;
       }
 
       .play-info {
-        min-width: 100%;
+        min-width: 496px;
+        box-sizing: content-box;
+        border: ridge 9px;
       }
 
       .status {
@@ -156,9 +162,11 @@
       }
 
       .container {
-        width: 60%;
-        margin-left: 20%;
+        min-width: 920px;
+        max-width: 920px;
         padding: 0px;
+        justify-content: center;
+        align-items: center;
       }
 
       .content {
