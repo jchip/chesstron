@@ -83,7 +83,13 @@ function loadPersonas() {
     includeRoot: true,
     maxLevel: 1
   });
-  return dirs.map(d => require(d));
+  return dirs
+    .map(d => require(d))
+    .reduce((all, p, idx) => {
+      all[idx] = p;
+      all[p.name] = p;
+      return all;
+    }, {});
 }
 
 const PERSONAS = loadPersonas();
@@ -96,7 +102,7 @@ function switchPersona(index) {
 }
 
 async function start() {
-  const persona = switchPersona(0);
+  const persona = switchPersona("mickey");
   const board = await connectDgtBoard();
 
   let game;
@@ -118,9 +124,9 @@ async function start() {
   let audioPlaying = false;
   let lastPlayed;
 
-  const playAudio = (sounds, folder, force) => {
+  const playAudio = (sounds, folder, force, triggerProb = 35) => {
     const shouldPlay = Math.random() * 100;
-    if (!audioPlaying && (force || shouldPlay >= 35)) {
+    if (!audioPlaying && (force || shouldPlay <= triggerProb)) {
       let name;
       if (typeof force === "string") {
         name = force;
@@ -149,9 +155,10 @@ async function start() {
   };
 
   game.on("ready", () => {
-    const readySound = _.get(persona, "actions.ready.sound.id");
+    const readySound = _.get(persona, "actions.ready.sound");
     if (readySound) {
-      playAudio(persona.sounds, persona.assetDir, readySound);
+      const groupId = readySound.groupId || "sounds";
+      playAudio(persona[groupId], persona.assetDir, readySound.id);
     }
     showTurn();
   });

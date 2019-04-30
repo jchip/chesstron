@@ -21,10 +21,8 @@ module.exports = {
   actions: {
     ready: {
       sound: {
-        id: "I tawt I taw a putty cat",
-        trigger: {
-          probability: 33 // percent
-        }
+        groupId: "sounds",
+        id: "I tawt I taw a putty cat"
       }
     }
   }
