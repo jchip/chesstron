@@ -4,7 +4,9 @@
   "description": "A chess program using electron",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "prepare": "electron-rebuild",
+    "win32": "electron-packager . --platform=win32"
   },
   "repository": "https://github.com/jchip/chesstron.git",
   "keywords": [
@@ -19,6 +21,7 @@
   },
   "dependencies": {
     "dgt-board": "jchip/dgt-board",
-    "filter-scan-dir": "^1.0.10"
+    "filter-scan-dir": "^1.0.10",
+    "lodash": "^4.17.11"
   }
 }

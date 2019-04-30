@@ -2,8 +2,11 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
+const scanDir = require("filter-scan-dir");
 const { startChess, connectDgtBoard } = require("dgt-board/index");
 const utils = require("dgt-board/lib/utils");
+const Path = require("path");
+const _ = require("lodash");
 
 const unicodePieces = {
   K: "\u2654",
@@ -72,21 +75,28 @@ const updateBoard = (raw, prev, expected) => {
   board.innerHTML = html.join("");
 };
 
-const tweetyIllegalMoveSounds = {
-  "bad old putty cat": "tweety03.mp3",
-  "bombs away": "tweety37.mp3",
-  "bad old putty cat2": "tweety07.mp3"
-};
+function loadPersonas() {
+  const dirs = scanDir.sync({
+    dir: Path.join(__dirname, "personas"),
+    filter: () => false,
+    includeDir: true,
+    includeRoot: true,
+    maxLevel: 1
+  });
+  return dirs.map(d => require(d));
+}
 
-const tweetySounds = {
-  "he got away": "tweety09.mp3",
-  "I wonder what that putty cat up to now": "tweety11.mp3",
-  "I tawt I taw a putty cat": "tweety13.mp3",
-  "A surprise for me": "tweety14.mp3",
-  "What you doin up there": "tweety15.mp3"
-};
+const PERSONAS = loadPersonas();
+
+function switchPersona(index) {
+  const persona = PERSONAS[index];
+  const avatarPath = `assets/${persona.assetDir}/${persona.images.default}`;
+  document.getElementById("opponent-avatar").innerHTML = `<img src="${avatarPath}" />`;
+  return persona;
+}
 
 async function start() {
+  const persona = switchPersona(0);
   const board = await connectDgtBoard();
 
   let game;
@@ -139,7 +149,10 @@ async function start() {
   };
 
   game.on("ready", () => {
-    playAudio(tweetySounds, "tweety", "I tawt I taw a putty cat");
+    const readySound = _.get(persona, "actions.ready.sound.id");
+    if (readySound) {
+      playAudio(persona.sounds, persona.assetDir, readySound);
+    }
     showTurn();
   });
 
@@ -147,7 +160,7 @@ async function start() {
 
   game.on("player-moved", () => {
     if (game.turnColor === "black") {
-      playAudio(tweetySounds, "tweety");
+      playAudio(persona.sounds, persona.assetDir);
     }
     showTurn();
   });
@@ -160,7 +173,7 @@ async function start() {
   });
 
   game.on("board-not-sync-change", () => {
-    playAudio(tweetyIllegalMoveSounds, "tweety", true);
+    playAudio(persona.illegalMoveSounds, persona.assetDir, true);
   });
 
   game.on("game-over", ({ result }) => {
@@ -172,7 +185,7 @@ async function start() {
   game.on("illegal-move", ({ move, color }) => {
     if (color === "white") {
       illegal = { move, color };
-      playAudio(tweetyIllegalMoveSounds, "tweety", true);
+      playAudio(persona.illegalMoveSounds, persona.assetDir, true);
       document.getElementById("status").innerHTML = `${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
