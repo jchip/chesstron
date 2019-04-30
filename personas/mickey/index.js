@@ -12,7 +12,8 @@ module.exports = {
   },
   illegalMoveSounds: {
     "oops huh huh": "oops-huh-huh.mp3",
-    "oh boy": "oh-boy.mp3"
+    "oh boy": "oh-boy.mp3",
+    "ha ha goofy": "haha-goofy.mp3"
   },
   readySounds: {
     "huh huh are you ready": "huh-huh-are-you-ready.mp3",
