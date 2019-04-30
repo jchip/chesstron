@@ -1,12 +1,14 @@
+"use strict";
+
 // This file is required by the index.html file and will
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const scanDir = require("filter-scan-dir");
 const { startChess, connectDgtBoard } = require("dgt-board/index");
 const utils = require("dgt-board/lib/utils");
-const Path = require("path");
 const _ = require("lodash");
+const { ipcRenderer } = require("electron");
+const personas = require("./lib/personas");
 
 const unicodePieces = {
   K: "\u2654",
@@ -75,34 +77,15 @@ const updateBoard = (raw, prev, expected) => {
   board.innerHTML = html.join("");
 };
 
-function loadPersonas() {
-  const dirs = scanDir.sync({
-    dir: Path.join(__dirname, "personas"),
-    filter: () => false,
-    includeDir: true,
-    includeRoot: true,
-    maxLevel: 1
-  });
-  return dirs
-    .map(d => require(d))
-    .reduce((all, p, idx) => {
-      all[idx] = p;
-      all[p.name] = p;
-      return all;
-    }, {});
-}
-
-const PERSONAS = loadPersonas();
-
-function switchPersona(index) {
-  const persona = PERSONAS[index];
+function switchPersona(persona) {
   const avatarPath = `assets/${persona.assetDir}/${persona.images.default}`;
   document.getElementById("opponent-avatar").innerHTML = `<img src="${avatarPath}" />`;
   return persona;
 }
 
 async function start() {
-  const persona = switchPersona("mickey");
+  let persona = switchPersona(personas.change("mickey"));
+
   const board = await connectDgtBoard();
 
   let game;
@@ -111,6 +94,11 @@ async function start() {
   const onChanged = positions => {
     updateBoard(game._board.toString(), null, positions.wantRaw);
   };
+
+  ipcRenderer.on("switch-persona", (event, name) => {
+    console.log("changing persona to", name);
+    persona = switchPersona(personas.change(name));
+  });
 
   game.on("wait-start", onChanged);
 
@@ -125,8 +113,11 @@ async function start() {
   let lastPlayed;
 
   const playAudio = (sounds, folder, force, triggerProb = 35) => {
-    const shouldPlay = Math.random() * 100;
-    if (!audioPlaying && (force || shouldPlay <= triggerProb)) {
+    const scaler = 100;
+    const shouldPlay = Math.random() * 100 * scaler;
+    const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
+    const high = low + triggerProb * scaler;
+    if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
       let name;
       if (typeof force === "string") {
         name = force;
