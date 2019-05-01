@@ -77,47 +77,107 @@ const updateBoard = (raw, prev, expected) => {
   board.innerHTML = html.join("");
 };
 
-function switchPersona(persona) {
+function switchPersona(personaName) {
+  const persona = personas.change(personaName);
   const avatarPath = `assets/${persona.assetDir}/${persona.images.default}`;
   document.getElementById("opponent-avatar").innerHTML = `<img src="${avatarPath}" />`;
+  if (localStorage.getItem("persona") !== personaName) {
+    localStorage.setItem("persona", personaName);
+  }
   return persona;
 }
 
 class GameSaver {
-  constructor({ persona, player, game, type }) {
+  constructor({ reset, persona, player, game, type }) {
     this._persona = persona;
     this._player = player;
     this._game = game;
 
     this._id = `${persona.name}-vs-player-${type}`;
     this._moveKey = `${this._id}-moves`;
-    localStorage.setItem(this._moveKey, "[]");
+    const exist = localStorage.getItem(this._id);
+    if (reset || !exist) {
+      const initFen = (game && game._initFen) || utils.defaultFen;
+      localStorage.setItem(this._id, utils.isStartPos(initFen) ? "startpos" : initFen);
+      localStorage.setItem(this._moveKey, "");
+    }
   }
 
   updateMove(move) {
-    const moves = JSON.parse(localStorage[this._moveKey]);
+    const moves = localStorage[this._moveKey].split(" ").filter(x => x);
     moves.push(move);
-    localStorage.setItem(this._moveKey, JSON.stringify(moves));
+    localStorage.setItem(this._moveKey, moves.join(" "));
+  }
+
+  initFen() {
+    const initFen = localStorage.getItem(this._id);
+    return initFen === "startpos" ? utils.defaultFen : initFen;
+  }
+
+  moves() {
+    return localStorage.getItem(this._moveKey);
   }
 }
 
 async function start() {
-  let persona = switchPersona(personas.change("mickey"));
+  const personaName = localStorage.getItem("persona") || "mickey";
+  let persona = switchPersona(personaName);
 
   const board = await connectDgtBoard();
 
-  let game;
+  let game = null;
   let gameSaver;
-  let gameType = "tournament";
+  let gameType = "Tournament";
 
-  game = await startChess(null, board, { allowTakeback: false });
+  const setBanner = banner => {
+    document.getElementById("game-banner").innerHTML = banner;
+  };
+
+  const setStatus = status => {
+    document.getElementById("status").innerText = status;
+  };
+
   const onChanged = positions => {
     updateBoard(game._board.toString(), null, positions.wantRaw);
   };
 
+  const newGame = async (banner, reset) => {
+    gameType = banner;
+    setBanner(banner);
+
+    if (game) {
+      await game.reset();
+    }
+
+    gameSaver = new GameSaver({
+      reset,
+      persona,
+      player: {},
+      game,
+      type: gameType.toLowerCase()
+    });
+
+    const allowTakeback = banner === "Tournament" ? false : true;
+
+    game = await startChess(game, board, {
+      allowTakeback,
+      startFen: gameSaver.initFen(),
+      moves: gameSaver.moves()
+    });
+
+    setStatus("waiting for board ready");
+
+    onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
+  };
+
+  await newGame("Tournament", false);
+
   ipcRenderer.on("switch-persona", (event, name) => {
-    console.log("changing persona to", name);
-    persona = switchPersona(personas.change(name));
+    if (persona.name !== name) {
+      console.log("changing persona to", name);
+      persona = switchPersona(name);
+      newGame(gameType, false);
+    }
   });
 
   game.on("wait-start", onChanged);
@@ -126,8 +186,6 @@ async function start() {
     updateBoard(boardRaw, null, wantRaw);
     document.getElementById("status").innerText = "waiting for take back";
   });
-
-  onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
 
   let audioPlaying = false;
   let lastPlayed;
@@ -166,12 +224,6 @@ async function start() {
   };
 
   game.on("ready", () => {
-    gameSaver = new GameSaver({
-      persona,
-      player: {},
-      game,
-      type: gameType
-    });
     const readySound = _.get(persona, "actions.ready.sound");
     if (readySound) {
       const groupId = readySound.groupId || "sounds";
@@ -224,23 +276,16 @@ async function start() {
     }
   });
 
-  const setBanner = banner => {
-    document.getElementById("game-banner").innerHTML = banner;
-  };
-
   document.getElementById("new-tournament").addEventListener("click", async () => {
     console.log("new tournament");
     await game.reset();
-    setBanner("Tournament");
-    await startChess(game, board, { allowTakeback: false });
+    await newGame("Tournament", true);
   });
 
   document.getElementById("new-tutorial").addEventListener("click", async () => {
     console.log("new tournament");
     await game.reset();
-    setBanner("Training");
-
-    await startChess(game, board, { allowTakeback: true });
+    await newGame("Training", true);
   });
 
   document.addEventListener("keyup", e => {
