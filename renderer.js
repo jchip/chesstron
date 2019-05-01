@@ -141,6 +141,36 @@ async function start() {
     updateBoard(game._board.toString(), null, positions.wantRaw);
   };
 
+  let audioPlaying = false;
+  let lastPlayed;
+
+  const playAudio = (sounds, folder, force, triggerProb = 35) => {
+    const scaler = 100;
+    const shouldPlay = Math.random() * 100 * scaler;
+    const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
+    const high = low + triggerProb * scaler;
+    if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
+      let name;
+      if (typeof force === "string") {
+        name = force;
+      } else {
+        const keys = Object.keys(sounds);
+        do {
+          const ix = Math.floor(Math.random() * keys.length);
+          name = keys[ix];
+        } while (keys.length > 1 && lastPlayed === name);
+        lastPlayed = name;
+      }
+      const sound = sounds[name];
+      const audio = new Audio(`assets/${folder}/audio/${sound}`);
+      audioPlaying = true;
+      audio.play();
+      audio.onended = () => {
+        audioPlaying = false;
+      };
+    }
+  };
+
   const newGame = async (banner, reset) => {
     gameType = banner;
     setBanner(banner);
@@ -176,6 +206,7 @@ async function start() {
     if (persona.name !== name) {
       console.log("changing persona to", name);
       persona = switchPersona(name);
+      playAudio(_.get(persona, "sounds.greeting"), persona.assetDir, true);
       newGame(gameType, false);
     }
   });
@@ -187,36 +218,6 @@ async function start() {
     document.getElementById("status").innerText = "waiting for take back";
   });
 
-  let audioPlaying = false;
-  let lastPlayed;
-
-  const playAudio = (sounds, folder, force, triggerProb = 35) => {
-    const scaler = 100;
-    const shouldPlay = Math.random() * 100 * scaler;
-    const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
-    const high = low + triggerProb * scaler;
-    if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
-      let name;
-      if (typeof force === "string") {
-        name = force;
-      } else {
-        const keys = Object.keys(sounds);
-        do {
-          const ix = Math.floor(Math.random() * keys.length);
-          name = keys[ix];
-        } while (keys.length > 1 && lastPlayed === name);
-        lastPlayed = name;
-      }
-      const sound = sounds[name];
-      const audio = new Audio(`assets/${folder}/audio/${sound}`);
-      audioPlaying = true;
-      audio.play();
-      audio.onended = () => {
-        audioPlaying = false;
-      };
-    }
-  };
-
   const showTurn = raw => {
     raw = raw || game._chess.toString();
     document.getElementById("status").innerText = game.turnColor + " turn";
@@ -227,7 +228,7 @@ async function start() {
     const readySound = _.get(persona, "actions.ready.sound");
     if (readySound) {
       const groupId = readySound.groupId || "sounds";
-      playAudio(persona[groupId], persona.assetDir, readySound.id);
+      playAudio(persona.sounds[groupId], persona.assetDir, readySound.id);
     }
     showTurn();
   });
@@ -237,7 +238,7 @@ async function start() {
   game.on("player-moved", ({ player, move }) => {
     gameSaver.updateMove(move.san);
     if (game.turnColor === "black") {
-      playAudio(persona.sounds, persona.assetDir);
+      playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
     }
     showTurn();
   });
@@ -250,7 +251,7 @@ async function start() {
   });
 
   game.on("board-not-sync-change", () => {
-    playAudio(persona.illegalMoveSounds, persona.assetDir, true);
+    playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
   });
 
   game.on("game-over", ({ result }) => {
@@ -262,7 +263,7 @@ async function start() {
   game.on("illegal-move", ({ move, color }) => {
     if (color === "white") {
       illegal = { move, color };
-      playAudio(persona.illegalMoveSounds, persona.assetDir, true);
+      playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
       document.getElementById("status").innerHTML = `${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
