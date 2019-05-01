@@ -83,12 +83,32 @@ function switchPersona(persona) {
   return persona;
 }
 
+class GameSaver {
+  constructor({ persona, player, game, type }) {
+    this._persona = persona;
+    this._player = player;
+    this._game = game;
+
+    this._id = `${persona.name}-vs-player-${type}`;
+    this._moveKey = `${this._id}-moves`;
+    localStorage.setItem(this._moveKey, "[]");
+  }
+
+  updateMove(move) {
+    const moves = JSON.parse(localStorage[this._moveKey]);
+    moves.push(move);
+    localStorage.setItem(this._moveKey, JSON.stringify(moves));
+  }
+}
+
 async function start() {
   let persona = switchPersona(personas.change("mickey"));
 
   const board = await connectDgtBoard();
 
   let game;
+  let gameSaver;
+  let gameType = "tournament";
 
   game = await startChess(null, board, { allowTakeback: false });
   const onChanged = positions => {
@@ -146,6 +166,12 @@ async function start() {
   };
 
   game.on("ready", () => {
+    gameSaver = new GameSaver({
+      persona,
+      player: {},
+      game,
+      type: gameType
+    });
     const readySound = _.get(persona, "actions.ready.sound");
     if (readySound) {
       const groupId = readySound.groupId || "sounds";
@@ -156,7 +182,8 @@ async function start() {
 
   game.on("board-ready", ({ boardRaw }) => showTurn(boardRaw));
 
-  game.on("player-moved", () => {
+  game.on("player-moved", ({ player, move }) => {
+    gameSaver.updateMove(move.san);
     if (game.turnColor === "black") {
       playAudio(persona.sounds, persona.assetDir);
     }

@@ -23,5 +23,10 @@
     "dgt-board": "jchip/dgt-board",
     "filter-scan-dir": "^1.0.10",
     "lodash": "^4.17.11"
+  },
+  "fyn": {
+    "dependencies": {
+      "dgt-board": "../dgt-board"
+    }
   }
 }
