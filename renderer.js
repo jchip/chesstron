@@ -125,6 +125,7 @@ async function start() {
 
   const board = await connectDgtBoard();
 
+  let illegal;
   let game = null;
   let gameSaver;
   let gameType = "Tournament";
@@ -138,11 +139,17 @@ async function start() {
   };
 
   const onChanged = positions => {
-    updateBoard(game._board.toString(), null, positions.wantRaw);
+    updateBoard(game.getBoardRaw(), null, positions.wantRaw);
   };
 
   let audioPlaying = false;
   let lastPlayed;
+
+  const showTurn = raw => {
+    raw = raw || game.getGameRaw();
+    document.getElementById("status").innerText = game.turnColor + " turn";
+    updateBoard(raw);
+  };
 
   const playAudio = (sounds, folder, force, triggerProb = 35) => {
     const scaler = 100;
@@ -171,6 +178,13 @@ async function start() {
     }
   };
 
+  const clearIllegalForBoardChanged = () => {
+    if (illegal) {
+      illegal = undefined;
+      showTurn();
+    }
+  };
+
   const newGame = async (banner, reset) => {
     gameType = banner;
     setBanner(banner);
@@ -189,6 +203,8 @@ async function start() {
 
     const allowTakeback = banner === "Tournament" ? false : true;
 
+    board.removeAllListeners();
+
     game = await startChess(game, board, {
       allowTakeback,
       startFen: gameSaver.initFen(),
@@ -198,6 +214,7 @@ async function start() {
     setStatus("waiting for board ready");
 
     onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
+    board.on("changed", clearIllegalForBoardChanged);
   };
 
   await newGame("Tournament", false);
@@ -217,12 +234,6 @@ async function start() {
     updateBoard(boardRaw, null, wantRaw);
     document.getElementById("status").innerText = "waiting for take back";
   });
-
-  const showTurn = raw => {
-    raw = raw || game._chess.toString();
-    document.getElementById("status").innerText = game.turnColor + " turn";
-    updateBoard(raw);
-  };
 
   game.on("ready", () => {
     const readySound = _.get(persona, "actions.ready.sound");
@@ -247,7 +258,7 @@ async function start() {
     document.getElementById("status").innerHTML =
       `<span class="text-red-dark font-bold">${move.san}</span>` +
       ` position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
-    updateBoard(game._chess.toString(), beforeRaw);
+    updateBoard(game.getGameRaw(), beforeRaw);
   });
 
   game.on("board-not-sync-change", () => {
@@ -258,8 +269,6 @@ async function start() {
     document.getElementById("status").innerHTML = result;
   });
 
-  let illegal;
-
   game.on("illegal-move", ({ move, color }) => {
     if (color === "white") {
       illegal = { move, color };
@@ -267,13 +276,6 @@ async function start() {
       document.getElementById("status").innerHTML = `${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
-    }
-  });
-
-  game._board.on("changed", () => {
-    if (illegal) {
-      illegal = undefined;
-      showTurn();
     }
   });
 
