@@ -125,6 +125,8 @@ async function start() {
 
   const board = await connectDgtBoard();
 
+  let statusMessages;
+  let currentStatus;
   let illegal;
   let game = null;
   let gameSaver;
@@ -134,8 +136,18 @@ async function start() {
     document.getElementById("game-banner").innerHTML = banner;
   };
 
+  setInterval(() => {
+    if (statusMessages) {
+      if (currentStatus !== statusMessages) {
+        currentStatus = statusMessages;
+        document.getElementById("status").innerHTML = currentStatus;
+      }
+      statusMessages = undefined;
+    }
+  }, 100);
+
   const setStatus = status => {
-    document.getElementById("status").innerText = status;
+    statusMessages = status;
   };
 
   const onChanged = positions => {
@@ -147,7 +159,7 @@ async function start() {
 
   const showTurn = raw => {
     raw = raw || game.getGameRaw();
-    document.getElementById("status").innerText = game.turnColor + " turn";
+    setStatus(game.turnColor + " turn");
     updateBoard(raw);
   };
 
@@ -232,7 +244,7 @@ async function start() {
 
   game.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
     updateBoard(boardRaw, null, wantRaw);
-    document.getElementById("status").innerText = "waiting for take back";
+    setStatus("waiting for take back");
   });
 
   game.on("ready", () => {
@@ -255,9 +267,10 @@ async function start() {
   });
 
   game.on("waiting-board-sync", ({ move, beforeRaw }) => {
-    document.getElementById("status").innerHTML =
-      `<span class="text-red-dark font-bold">${move.san}</span>` +
-      ` position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
+    setStatus(
+      `<span class="text-red-dark font-bold">${move.san}</span>
+position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
+    );
     updateBoard(game.getGameRaw(), beforeRaw);
   });
 
@@ -266,16 +279,16 @@ async function start() {
   });
 
   game.on("game-over", ({ result }) => {
-    document.getElementById("status").innerHTML = result;
+    setStatus(result);
   });
 
   game.on("illegal-move", ({ move, color }) => {
     if (color === "white") {
       illegal = { move, color };
       playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
-      document.getElementById("status").innerHTML = `${color}: \
+      setStatus(`${color}: \
 <span class="text-red">illegal move </span>\
-<span class="text-green"> ${move.from} \u2192 ${move.to} </span>`;
+<span class="text-green"> ${move.from} \u2192 ${move.to} </span>`);
     }
   });
 
