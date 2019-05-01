@@ -22,6 +22,7 @@
   "dependencies": {
     "dgt-board": "jchip/dgt-board",
     "filter-scan-dir": "^1.0.10",
+    "idb": "^4.0.3",
     "lodash": "^4.17.11"
   },
   "fyn": {

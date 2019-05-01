@@ -9,6 +9,7 @@ const utils = require("dgt-board/lib/utils");
 const _ = require("lodash");
 const { ipcRenderer } = require("electron");
 const personas = require("./lib/personas");
+const DB = require("./lib/db");
 
 const unicodePieces = {
   K: "\u2654",
@@ -109,13 +110,22 @@ class GameSaver {
     localStorage.setItem(this._moveKey, moves.join(" "));
   }
 
-  initFen() {
+  getInitFen() {
     const initFen = localStorage.getItem(this._id);
     return initFen === "startpos" ? utils.defaultFen : initFen;
   }
 
-  moves() {
+  getInitFenPos() {
+    return localStorage.getItem(this._id);
+  }
+
+  getMoves() {
     return localStorage.getItem(this._moveKey);
+  }
+
+  clear() {
+    localStorage.removeItem(this._id);
+    localStorage.removeItem(this._moveKey);
   }
 }
 
@@ -123,6 +133,7 @@ async function start() {
   const personaName = localStorage.getItem("persona") || "mickey";
   let persona = switchPersona(personaName);
 
+  const db = await DB.initialize();
   const board = await connectDgtBoard();
 
   let statusMessages;
@@ -219,8 +230,8 @@ async function start() {
 
     game = await startChess(game, board, {
       allowTakeback,
-      startFen: gameSaver.initFen(),
-      moves: gameSaver.moves()
+      startFen: gameSaver.getInitFen(),
+      moves: gameSaver.getMoves()
     });
 
     setStatus("waiting for board ready");
@@ -278,8 +289,33 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
     playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
   });
 
-  game.on("game-over", ({ result }) => {
-    setStatus(result);
+  game.on("game-over", async result => {
+    setStatus(`Gameover, ${result.result}`);
+    const black = game.getPlayer("black");
+    const white = game.getPlayer("white");
+
+    let bpt = 5;
+    let wpt = 5;
+
+    if (result.winner) {
+      bpt = result.winner === "black" ? 10 : 0;
+      wpt = result.winner === "white" ? 10 : 0;
+    }
+    await db.add("games", {
+      type: gameType,
+      date: Math.floor(Date.now() / 1000),
+      fen: gameSaver.getInitFenPos(),
+      moves: gameSaver.getMoves(),
+      black: {
+        name: black.name,
+        point: bpt
+      },
+      white: {
+        name: white.name,
+        point: wpt
+      }
+    });
+    gameSaver.clear();
   });
 
   game.on("illegal-move", ({ move, color }) => {
