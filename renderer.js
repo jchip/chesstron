@@ -163,7 +163,9 @@ async function start() {
   ipcRenderer.on("edit-profile", showProfile);
 
   const setVsBanner = () => {
-    document.getElementById("vs-banner").innerHTML = `${profile.firstName} vs. ${persona.name}`;
+    const playerName = [profile.firstName, profile.lastName].filter(x => x).join(" ") || "player";
+    const personaName = [persona.firstName, persona.lastName].filter(x => x).join(" ") || "???";
+    document.getElementById("vs-banner").innerHTML = `${playerName} vs. ${personaName}`;
   };
 
   setVsBanner();
@@ -302,8 +304,8 @@ async function start() {
     game = await startChess(game, board, {
       allowTakeback,
       blackInfo: {
-        firstName: persona.name,
-        lastName: "",
+        firstName: persona.firstName,
+        lastName: persona.lastName,
         rating: "???"
       },
       whiteInfo: profile,

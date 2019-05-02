@@ -1,7 +1,9 @@
 "use strict";
 
 module.exports = {
-  name: "Mickey",
+  name: "mickey",
+  firstName: "Mickey",
+  lastName: "Mouse",
   assetDir: "mickey",
   sounds: {
     greeting: {
