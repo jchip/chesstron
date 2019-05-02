@@ -154,12 +154,19 @@ function showProfile() {
 }
 
 async function start() {
+  let profile = JSON.parse(localStorage.getItem("profile") || "{}");
   $("#leaveProfile").click(leaveProfile);
   $("#saveProfile").click(saveProfile);
   const personaName = localStorage.getItem("persona") || "mickey";
   let persona = switchPersona(personaName);
 
   ipcRenderer.on("edit-profile", showProfile);
+
+  const setVsBanner = () => {
+    document.getElementById("vs-banner").innerHTML = `${profile.firstName} vs. ${persona.name}`;
+  };
+
+  setVsBanner();
 
   const db = await DB.initialize();
   const board = await connectDgtBoard();
@@ -183,7 +190,7 @@ async function start() {
       .map((x, ix) => x && bgu[ix])
       .filter(x => x)[0];
 
-    const profile = {
+    profile = {
       firstName,
       lastName,
       rating,
@@ -274,6 +281,7 @@ async function start() {
   const newGame = async (banner, reset) => {
     gameType = banner;
     setBanner(banner);
+    setVsBanner();
 
     if (game) {
       await game.reset();
@@ -293,6 +301,12 @@ async function start() {
 
     game = await startChess(game, board, {
       allowTakeback,
+      blackInfo: {
+        firstName: persona.name,
+        lastName: "",
+        rating: "???"
+      },
+      whiteInfo: profile,
       startFen: gameSaver.getInitFen(),
       moves: gameSaver.getMoves()
     });
