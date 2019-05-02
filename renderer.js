@@ -129,12 +129,75 @@ class GameSaver {
   }
 }
 
+function leaveProfile() {
+  document.getElementById("user-profile").style.display = "none";
+  document.getElementById("game-container").style.display = "block";
+}
+
+function showProfile() {
+  const x = localStorage.getItem("profile");
+  if (x) {
+    const profile = JSON.parse(x);
+    $("#profileFirstname").val(profile.firstName);
+    $("#profileLastname").val(profile.lastName);
+    $("#profileRating").val(profile.rating);
+    $("#profileCity").val(profile.city);
+    $("#profileState").val(profile.state);
+    $("#profileZip").val(profile.zip);
+    $("#favOpen").val(profile.favOpen);
+    $("#favGM").val(profile.favGM);
+    $("#coachName").val(profile.coachName);
+  }
+
+  document.getElementById("user-profile").style.display = "block";
+  document.getElementById("game-container").style.display = "none";
+}
+
 async function start() {
+  $("#leaveProfile").click(leaveProfile);
+  $("#saveProfile").click(saveProfile);
   const personaName = localStorage.getItem("persona") || "mickey";
   let persona = switchPersona(personaName);
 
+  ipcRenderer.on("edit-profile", showProfile);
+
   const db = await DB.initialize();
   const board = await connectDgtBoard();
+
+  function saveProfile() {
+    const firstName = $("#profileFirstname").val();
+    const lastName = $("#profileLastname").val();
+    const rating = $("#profileRating").val();
+    const city = $("#profileCity").val();
+    const state = $("#profileState").val();
+    const zip = $("#profileZip").val();
+    const favOpen = $("#favOpen").val();
+    const favGM = $("#favGM").val();
+    const coachName = $("#coachName").val();
+    const bgu = ["boy", "girl", "unknown"];
+    const sex = [
+      $("#radioBoy")[0].checked,
+      $("#radioGirl")[0].checked,
+      $("#radioUnknown")[0].checked
+    ]
+      .map((x, ix) => x && bgu[ix])
+      .filter(x => x)[0];
+
+    const profile = {
+      firstName,
+      lastName,
+      rating,
+      city,
+      state,
+      zip,
+      sex,
+      favOpen,
+      favGM,
+      coachName
+    };
+    localStorage.setItem("profile", JSON.stringify(profile));
+    leaveProfile();
+  }
 
   let statusMessages;
   let currentStatus;

@@ -13,6 +13,12 @@ function getTemplate() {
       label: "Edit",
       submenu: [
         {
+          label: "My profile",
+          click: (item, window) => {
+            window.webContents.send("edit-profile", "");
+          }
+        },
+        {
           label: "Undo",
           accelerator: "CmdOrCtrl+Z",
           role: "undo"
