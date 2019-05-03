@@ -27,7 +27,7 @@ const unicodePieces = {
 };
 
 const updateBoard = (raw, prev, expected) => {
-  const board = document.getElementById("board");
+  const board = document.getElementById("chess-board");
   const html = [];
 
   let rSqColor;
@@ -160,13 +160,20 @@ async function start() {
   let boardSz = 0;
 
   const adjustBoardSize = () => {
-    const boardElem = $("#board");
+    const boardElem = $("#chess-board");
     const sz = boardElem.width();
     if (sz !== boardSz) {
+      boardElem.css("font-size", `${Math.floor(sz / 8) - 4}px`);
       boardSz = sz;
       console.log("board size", sz);
       boardElem.height(sz);
-      $("#board-rank").height(sz);
+      const rank = $("#board-rank");
+      const rankFileFontSize = `${Math.floor(sz / 20)}px`;
+      rank.height(sz);
+      rank.css("font-size", rankFileFontSize);
+      $("#board-file").css("font-size", rankFileFontSize);
+      $("#board-container").css("opacity", "1");
+      $("#play-info").css("font-size", `${Math.floor(sz / 30)}px`);
     }
   };
 
@@ -176,7 +183,6 @@ async function start() {
   });
 
   adjustBoardSize();
-  $("#board-container").css("opacity", "1");
 
   let profile = JSON.parse(localStorage.getItem("profile") || "{}");
   $("#leaveProfile").click(leaveProfile);

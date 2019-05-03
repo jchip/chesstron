@@ -20,6 +20,7 @@
         display: flex;
         margin-right: 0%;
         opacity: 0;
+        font-size: 16pt;
       }
 
       .chess-board {
@@ -33,9 +34,10 @@
         border: burlywood 9px ridge;
         box-sizing: content-box;
         margin: 0px;
+        font-size: 80px;
       }
 
-      .chess-rank {
+      .board-rank {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -51,7 +53,7 @@
         box-sizing: content-box;
       }
 
-      .chess-file {
+      .board-file {
         display: flex;
         flex-wrap: wrap;
         justify-content: left;
@@ -81,14 +83,12 @@
         min-height: 12.5%;
         max-height: 12.5%;
         color: black;
-        font-size: 3em;
         font-family: Tahoma;
       }
 
       .rank {
         min-width: 32px;
         max-width: 32px;
-        font-size: 1.5em;
         justify-content: flex-end;
         font-family: Arial, Helvetica, sans-serif;
         text-shadow: 1px 1px 2px lightblue;
@@ -100,7 +100,6 @@
         max-width: 12.5%;
         min-height: 32px;
         max-height: 32px;
-        font-size: 1.5em;
         font-family: Arial, Helvetica, sans-serif;
         text-shadow: 1px 1px 2px lightblue;
       }
@@ -108,6 +107,7 @@
       .play-info {
         box-sizing: content-box;
         border: ridge 9px;
+        font-size: 12pt;
       }
 
       .gray {
@@ -308,7 +308,7 @@
         <div class="col-md-3" class="persona-avatar" id="opponent-avatar"></div>
         <div class="col-md-6">
           <div class="board-container" id="board-container">
-            <div id="board-rank" class="chess-rank col-sm-1 p-0">
+            <div id="board-rank" class="board-rank col-sm-1 p-0">
               <div class="square rank">8</div>
               <div class="square rank">7</div>
               <div class="square rank">6</div>
@@ -319,7 +319,7 @@
               <div class="square rank">1</div>
             </div>
             <div class="board-with-file col-sm p-0">
-              <div id="board" class="chess-board">
+              <div id="chess-board" class="chess-board">
                 <!-- <div class="white square">♔</div>
         <div class="gray square">♚</div>
         <div class="white square">♚</div>
@@ -329,7 +329,7 @@
         <div class="white square">♚</div>
         <div class="gray square">♚</div> -->
               </div>
-              <div class="chess-file">
+              <div class="board-file" id="board-file">
                 <div class="square file">a</div>
                 <div class="square file">b</div>
                 <div class="square file">c</div>
@@ -339,7 +339,7 @@
                 <div class="square file">g</div>
                 <div class="square file">h</div>
               </div>
-              <div class="play-info" id="playInfo">
+              <div class="play-info" id="play-info">
                 <div class="bg-light">
                   <div id="status" class="status">waiting for board ready</div>
                 </div>
