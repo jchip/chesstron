@@ -70,7 +70,7 @@ const updateBoard = (raw, prev, expected) => {
       if (piece !== ".") {
         html.push(unicodePieces[piece]);
       } else {
-        html.push("&nbsp;");
+        html.push("\u2800");
       }
       html.push(`</div>`);
       cSqColor = cSqColor !== "white" ? "white" : "gray";
