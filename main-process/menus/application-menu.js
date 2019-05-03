@@ -1,5 +1,6 @@
 "use strict";
 
+const Fs = require("fs");
 const personas = require("../../lib/personas");
 const { BrowserWindow, Menu, app, shell, dialog } = require("electron");
 
@@ -82,7 +83,7 @@ function getTemplate() {
             }
           })(),
           click: (item, focusedWindow) => {
-            if (focusedWindow) {
+            if (focusedWindow && Fs.existsSync(".dev-tool")) {
               focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
             }
           }
@@ -97,10 +98,11 @@ function getTemplate() {
             }
           })(),
           click: (item, focusedWindow) => {
-            if (focusedWindow) {
+            if (focusedWindow && Fs.existsSync(".dev-tool")) {
               focusedWindow.toggleDevTools();
             }
-          }
+          },
+          visible: false
         },
         {
           type: "separator"
