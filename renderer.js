@@ -391,7 +391,7 @@ async function start() {
 
   game.on("waiting-board-sync", ({ move, beforeRaw }) => {
     setStatus(
-      `<span class="text-red-dark font-bold">${move.san}</span>
+      `<span class="text-red-dark font-weight-bold">${move.san}</span>
 position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
     );
     updateBoard(game.getGameRaw(), beforeRaw);
