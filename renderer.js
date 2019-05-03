@@ -205,6 +205,7 @@ async function start() {
       coachName
     };
     localStorage.setItem("profile", JSON.stringify(profile));
+    setVsBanner();
     leaveProfile();
   }
 
@@ -327,6 +328,7 @@ async function start() {
       persona = switchPersona(name);
       playAudio(_.get(persona, "sounds.greeting"), persona.assetDir, true);
       newGame(gameType, false);
+      setVsBanner();
     }
   });
 
