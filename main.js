@@ -24,7 +24,7 @@ function initialize() {
   function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-      width: 1150,
+      width: 1250,
       height: 900,
       title: "Chesstron",
       webPreferences: {
