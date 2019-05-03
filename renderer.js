@@ -165,7 +165,6 @@ async function start() {
     if (sz !== boardSz) {
       boardElem.css("font-size", `${Math.floor(sz / 8) - 4}px`);
       boardSz = sz;
-      console.log("board size", sz);
       boardElem.height(sz);
       const rank = $("#board-rank");
       const rankFileFontSize = `${Math.floor(sz / 20)}px`;
