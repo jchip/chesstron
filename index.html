@@ -6,6 +6,9 @@
     <link rel="stylesheet" href="./src/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
 
     <style>
+      .game-container {
+        width: 90%;
+      }
       .persona-avatar {
         max-width: 100%;
         height: auto;
@@ -37,39 +40,6 @@
         font-size: 80px;
       }
 
-      .board-rank {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: left;
-        align-content: stretch;
-        align-items: stretch;
-        border-top: transparent 9px solid;
-        border-right: transparent 9px solid;
-        min-width: 20px;
-        max-width: 20px;
-        margin-right: 0px;
-        margin: 0px;
-        padding: 0px;
-        box-sizing: content-box;
-      }
-
-      .board-file {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: left;
-        align-content: stretch;
-        align-items: flex-start;
-        border: transparent 9px solid;
-        min-height: 32px;
-        max-height: 62px;
-        margin-right: 0px;
-        margin: 0px;
-        padding: 0px;
-        border-top: 1px;
-        box-sizing: content-box;
-      }
-
       .square {
         text-align: center;
         display: flex;
@@ -87,6 +57,20 @@
         font-family: Tahoma;
       }
 
+      .board-rank {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-top: transparent 9px solid;
+        border-right: transparent 9px solid;
+        min-width: 20px;
+        max-width: 20px;
+        margin-right: 0px;
+        margin: 0px;
+        padding: 0px;
+        box-sizing: content-box;
+      }
+
       .rank {
         min-width: 20px;
         max-width: 20px;
@@ -95,20 +79,30 @@
         text-shadow: 1px 1px 2px lightblue;
       }
 
+      .board-file {
+        display: flex;
+        flex-wrap: wrap;
+        border-left: transparent 9px solid;
+        margin-right: 0px;
+        padding: 0px;
+        box-sizing: content-box;
+      }
+
       .file {
-        align-items: flex-start;
+        align-items: center;
+        vertical-align: top;
         min-width: 12.5%;
         max-width: 12.5%;
-        min-height: 32px;
-        max-height: 32px;
         font-family: Arial, Helvetica, sans-serif;
         text-shadow: 1px 1px 2px lightblue;
+        margin-top: calc((1 - 1.2) * 0.5em);
       }
 
       .play-info {
         box-sizing: content-box;
         border: ridge 9px;
         font-size: 12pt;
+        margin: 0px;
       }
 
       .stat-info {
@@ -293,7 +287,7 @@
         </div>
       </div>
     </div>
-    <div class="container" id="game-container">
+    <div class="container-fluid game-container" id="game-container">
       <div class="row" id="controls">
         <div class=" my-2 col-sm-2">
           <div class="dropdown">
