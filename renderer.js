@@ -171,6 +171,7 @@ async function start() {
       const rankFileFontSize = `${Math.floor(sz / 20)}px`;
       rank.height(sz);
       rank.css("font-size", rankFileFontSize);
+      $("#stat-info").height(sz);
       $("#board-file").css("font-size", rankFileFontSize);
       $("#board-container").css("opacity", "1");
       $("#play-info").css("font-size", `${Math.floor(sz / 30)}px`);

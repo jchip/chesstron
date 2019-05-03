@@ -44,9 +44,10 @@
         justify-content: left;
         align-content: stretch;
         align-items: stretch;
-        border: transparent 9px solid;
-        min-width: 32px;
-        max-width: 32px;
+        border-top: transparent 9px solid;
+        border-right: transparent 9px solid;
+        min-width: 20px;
+        max-width: 20px;
         margin-right: 0px;
         margin: 0px;
         padding: 0px;
@@ -87,8 +88,8 @@
       }
 
       .rank {
-        min-width: 32px;
-        max-width: 32px;
+        min-width: 20px;
+        max-width: 20px;
         justify-content: flex-end;
         font-family: Arial, Helvetica, sans-serif;
         text-shadow: 1px 1px 2px lightblue;
@@ -108,6 +109,11 @@
         box-sizing: content-box;
         border: ridge 9px;
         font-size: 12pt;
+      }
+
+      .stat-info {
+        box-sizing: content-box;
+        border: ridge 9px;
       }
 
       .gray {
@@ -319,7 +325,7 @@
               <div class="square rank">1</div>
             </div>
             <div class="board-with-file col-sm p-0">
-              <div id="chess-board" class="chess-board">
+              <div class="chess-board rounded" id="chess-board">
                 <!-- <div class="white square">♔</div>
         <div class="gray square">♚</div>
         <div class="white square">♚</div>
@@ -339,7 +345,7 @@
                 <div class="square file">g</div>
                 <div class="square file">h</div>
               </div>
-              <div class="play-info" id="play-info">
+              <div class="play-info border-info rounded" id="play-info">
                 <div class="bg-light">
                   <div id="status" class="status">waiting for board ready</div>
                 </div>
@@ -347,8 +353,13 @@
             </div>
           </div>
         </div>
-        <div class="col-sm">
-          <span class="alert-warning">00:00:00</span>
+        <div class="col-md-3">
+          <div id="stat-info" class="stat-info rounded ">
+            <div class="alert-warning border border-warning" id="black-time">00:00:00</div>
+            <div class="alert-warning border border-warning" id="white-time">
+              00:00:00
+            </div>
+          </div>
         </div>
       </div>
     </div>
