@@ -245,6 +245,7 @@ async function start() {
   let game = null;
   let gameSaver;
   let gameType = "Tournament";
+  let boardReady = false;
 
   const setBanner = banner => {
     document.getElementById("game-banner").innerHTML = banner;
@@ -311,6 +312,34 @@ async function start() {
     }
   };
 
+  const updateClockDisplay = (color, totalTime) => {
+    const elemId = `${color}-time`;
+    const clockElem = document.getElementById(elemId);
+
+    const totalSeconds = totalTime / 1000;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds - minutes * 60);
+    const minStr = minutes.toString().padStart(2, "0");
+    const secStr = seconds.toString().padStart(2, "0");
+    const dispStr = `${minStr}:${secStr}`;
+    clockElem.innerText = dispStr;
+  };
+
+  const updatePlayerClock = () => {
+    setTimeout(updatePlayerClock, 100);
+
+    if (!game || !boardReady) return;
+
+    const player = game.getPlayer(game.turnColor);
+    if (!player) return;
+
+    const remainTime = player.getRemainingTime();
+    const runningTime = player.getTurnRunningTime();
+    if (!remainTime || !runningTime) return;
+
+    updateClockDisplay(game.turnColor, remainTime - runningTime);
+  };
+
   const newGame = async (banner, reset) => {
     gameType = banner;
     setBanner(banner);
@@ -332,14 +361,23 @@ async function start() {
 
     board.removeAllListeners();
 
+    const whiteTotalTime = 60 * 1000 * 60;
+    const blackTotalTime = 10 * 1000 * 60;
+
     game = await startChess(game, board, {
       allowTakeback,
       blackInfo: {
         firstName: persona.firstName,
         lastName: persona.lastName,
-        rating: "???"
+        rating: "???",
+        totalTime: blackTotalTime
       },
-      whiteInfo: profile,
+      whiteInfo: Object.assign(
+        {
+          totalTime: whiteTotalTime
+        },
+        profile
+      ),
       startFen: gameSaver.getInitFen(),
       moves: gameSaver.getMoves()
     });
@@ -348,6 +386,9 @@ async function start() {
 
     onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
     board.on("changed", clearIllegalForBoardChanged);
+    updateClockDisplay("black", blackTotalTime);
+    updateClockDisplay("white", whiteTotalTime);
+    setTimeout(updatePlayerClock, 100);
   };
 
   await newGame("Tournament", false);
@@ -370,6 +411,7 @@ async function start() {
   });
 
   game.on("ready", () => {
+    boardReady = true;
     const readySound = _.get(persona, "actions.ready.sound");
     if (readySound) {
       const groupId = readySound.groupId || "sounds";
@@ -378,9 +420,19 @@ async function start() {
     showTurn();
   });
 
-  game.on("board-ready", ({ boardRaw }) => showTurn(boardRaw));
+  game.on("board-ready", ({ boardRaw }) => {
+    console.log("board-ready");
+    boardReady = true;
+    showTurn(boardRaw);
+  });
+
+  game.on("board-synced", () => {
+    console.log("board-synced");
+    boardReady = true;
+  });
 
   game.on("player-moved", ({ player, move }) => {
+    updateClockDisplay(player.color, player.getRemainingTime());
     gameSaver.updateMove(move.san);
     if (game.turnColor === "black") {
       playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
@@ -393,6 +445,7 @@ async function start() {
       `<span class="text-red-dark font-weight-bold">${move.san}</span>
 position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
     );
+    boardReady = false;
     updateBoard(game.getGameRaw(), beforeRaw);
   });
 
