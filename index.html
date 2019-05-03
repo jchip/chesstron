@@ -109,6 +109,11 @@
       .stat-info {
         box-sizing: content-box;
         border: ridge 9px;
+        height: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
 
       .gray {
@@ -146,6 +151,13 @@
       }
       .text-green {
         color: #38c172;
+      }
+
+      .clock-time {
+        display: flex;
+        justify-content: center;
+        border: 2px solid;
+        font-size: 1.5em;
       }
     </style>
   </head>
@@ -359,9 +371,11 @@
           </div>
         </div>
         <div class="col-md-3">
-          <div id="stat-info" class="stat-info rounded ">
-            <div class="alert-warning border border-warning" id="black-time">00:00:00</div>
-            <div class="alert-warning border border-warning" id="white-time">
+          <div id="stat-info" class="stat-info rounded">
+            <div class="alert-warning border-warning clock-time" id="black-time">
+              00:00:00
+            </div>
+            <div class="alert-warning border-warning clock-time" id="white-time">
               00:00:00
             </div>
           </div>
