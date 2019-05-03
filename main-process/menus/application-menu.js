@@ -83,7 +83,7 @@ function getTemplate() {
             }
           })(),
           click: (item, focusedWindow) => {
-            if (focusedWindow && Fs.existsSync(".dev-tool")) {
+            if (focusedWindow) {
               focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
             }
           }
