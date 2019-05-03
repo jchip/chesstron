@@ -69,6 +69,8 @@ const updateBoard = (raw, prev, expected) => {
       html.push(`<div class="${cSqColor} square${pieceColor}">`);
       if (piece !== ".") {
         html.push(unicodePieces[piece]);
+      } else {
+        html.push("&nbsp;");
       }
       html.push(`</div>`);
       cSqColor = cSqColor !== "white" ? "white" : "gray";
@@ -154,6 +156,28 @@ function showProfile() {
 }
 
 async function start() {
+  let adjustSizeTimer;
+  let boardSz = 0;
+
+  const adjustBoardSize = () => {
+    const boardElem = $("#board");
+    const sz = boardElem.width();
+    if (sz !== boardSz) {
+      boardSz = sz;
+      console.log("board size", sz);
+      boardElem.height(sz);
+      $("#board-rank").height(sz);
+    }
+  };
+
+  $(window).resize(() => {
+    clearTimeout(adjustSizeTimer);
+    adjustSizeTimer = setTimeout(adjustBoardSize, 20);
+  });
+
+  adjustBoardSize();
+  $("#board-container").css("opacity", "1");
+
   let profile = JSON.parse(localStorage.getItem("profile") || "{}");
   $("#leaveProfile").click(leaveProfile);
   $("#saveProfile").click(saveProfile);

@@ -4,21 +4,22 @@
     <meta charset="UTF-8" />
     <title>Chesstron</title>
     <link rel="stylesheet" href="./src/bootstrap-4.3.1-dist/css/bootstrap.min.css" />
-    <link href="./src/tailwind.min.css" rel="stylesheet" />
 
     <style>
+      .persona-avatar {
+        max-width: 100%;
+        height: auto;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
       .board-container {
         display: flex;
         margin-right: 0%;
-      }
-
-      .board-with-file {
-        padding: 0;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        background: transparent;
-        max-width: 600px;
+        opacity: 0;
       }
 
       .chess-board {
@@ -27,14 +28,10 @@
         flex-direction: row;
         flex-wrap: wrap;
         justify-content: left;
-        align-content: stretch;
-        align-items: stretch;
+        align-content: center;
+        align-items: center;
         border: burlywood 9px ridge;
         box-sizing: content-box;
-        min-width: 496px;
-        min-height: 496px;
-        max-width: 496px;
-        max-height: 496px;
         margin: 0px;
       }
 
@@ -47,9 +44,7 @@
         align-items: stretch;
         border: transparent 9px solid;
         min-width: 32px;
-        min-height: 496px;
         max-width: 32px;
-        max-height: 496px;
         margin-right: 0px;
         margin: 0px;
         padding: 0px;
@@ -63,9 +58,7 @@
         align-content: stretch;
         align-items: flex-start;
         border: transparent 9px solid;
-        min-width: 496px;
         min-height: 32px;
-        max-width: 496px;
         max-height: 62px;
         margin-right: 0px;
         margin: 0px;
@@ -85,6 +78,8 @@
         min-width: 12.5%;
         max-width: 12.5%;
         height: 12.5%;
+        min-height: 12.5%;
+        max-height: 12.5%;
         color: black;
         font-size: 3em;
         font-family: Tahoma;
@@ -96,6 +91,7 @@
         font-size: 1.5em;
         justify-content: flex-end;
         font-family: Arial, Helvetica, sans-serif;
+        text-shadow: 1px 1px 2px lightblue;
       }
 
       .file {
@@ -106,6 +102,12 @@
         max-height: 32px;
         font-size: 1.5em;
         font-family: Arial, Helvetica, sans-serif;
+        text-shadow: 1px 1px 2px lightblue;
+      }
+
+      .play-info {
+        box-sizing: content-box;
+        border: ridge 9px;
       }
 
       .gray {
@@ -124,52 +126,8 @@
         color: green;
       }
 
-      .opponent-avatar {
-        min-width: 350px;
-        max-width: 350px;
-      }
-
-      .play-info {
-        min-width: 496px;
-        box-sizing: content-box;
-        border: ridge 9px;
-      }
-
       .status {
-        font-size: 2em;
-      }
-
-      .controls {
-        padding: 10px;
-        width: 100%;
-      }
-
-      .control-group {
-        position: relative;
-        display: inline-flex;
-        vertical-align: top;
-        margin: 0px;
-      }
-
-      .game-banner {
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        flex-grow: 1;
-        flex-shrink: 0;
-        margin-left: 10px;
-      }
-
-      .container {
-        min-width: 920px;
-        max-width: 920px;
-        padding: 0px;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .content {
-        min-width: 100%;
+        font-size: 1.5em;
       }
 
       .user-profile {
@@ -190,7 +148,6 @@
             class="form-control"
             id="profileFirstname"
             placeholder="First name"
-            value="Ethan"
             required
           />
           <div class="valid-feedback">
@@ -207,7 +164,6 @@
             class="form-control"
             id="profileLastname"
             placeholder="Last name"
-            value="Player"
             required
           />
           <div class="valid-feedback">
@@ -322,50 +278,49 @@
       </div>
     </div>
     <div class="container" id="game-container">
-      <div class="flex">
-        <div class="controls" id="controls">
-          <div class="control-group">
-            <div class="dropdown">
-              <button
-                class="btn btn-primary dropdown-toggle btn-lg"
-                type="button"
-                id="dropdownMenuButton"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                New Game
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#" id="new-tournament">Tournament</a>
-                <a class="dropdown-item" href="#" id="new-tutorial">Training</a>
-              </div>
-            </div>
-            <div class="alert alert-primary control-group game-banner">
-              <strong id="game-banner">Tournament</strong>
-            </div>
-            <div class="alert alert-warning control-group game-banner">
-              <strong id="vs-banner">?? vs ??</strong>
+      <div class="row" id="controls">
+        <div class=" my-2 col-sm-2">
+          <div class="dropdown">
+            <button
+              class="btn btn-primary dropdown-toggle btn-lg"
+              type="button"
+              id="dropdownMenuButton"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              New Game
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="#" id="new-tournament">Tournament</a>
+              <a class="dropdown-item" href="#" id="new-tutorial">Training</a>
             </div>
           </div>
         </div>
+        <div class="alert alert-primary p-2 m-2 col-sm-3">
+          <strong id="game-banner">Tournament</strong>
+        </div>
+        <div class="alert alert-warning p-2 my-2 mx-auto col-sm">
+          <strong id="vs-banner">?? vs ??</strong>
+        </div>
       </div>
-      <div class="flex content">
-        <div class="opponent-avatar" id="opponent-avatar"></div>
-        <div class="board-container">
-          <div class="chess-rank">
-            <div class="square rank">8</div>
-            <div class="square rank">7</div>
-            <div class="square rank">6</div>
-            <div class="square rank">5</div>
-            <div class="square rank">4</div>
-            <div class="square rank">3</div>
-            <div class="square rank">2</div>
-            <div class="square rank">1</div>
-          </div>
-          <div class="board-with-file">
-            <div id="board" class="chess-board">
-              <!-- <div class="white square">♔</div>
+      <div class="row">
+        <div class="col-md-3" class="persona-avatar" id="opponent-avatar"></div>
+        <div class="col-md-6">
+          <div class="board-container" id="board-container">
+            <div id="board-rank" class="chess-rank col-sm-1 p-0">
+              <div class="square rank">8</div>
+              <div class="square rank">7</div>
+              <div class="square rank">6</div>
+              <div class="square rank">5</div>
+              <div class="square rank">4</div>
+              <div class="square rank">3</div>
+              <div class="square rank">2</div>
+              <div class="square rank">1</div>
+            </div>
+            <div class="board-with-file col-sm p-0">
+              <div id="board" class="chess-board">
+                <!-- <div class="white square">♔</div>
         <div class="gray square">♚</div>
         <div class="white square">♚</div>
         <div class="gray square">♔</div>
@@ -373,23 +328,27 @@
         <div class="gray square ">♔</div>
         <div class="white square">♚</div>
         <div class="gray square">♚</div> -->
-            </div>
-            <div class="chess-file">
-              <div class="square file">a</div>
-              <div class="square file">b</div>
-              <div class="square file">c</div>
-              <div class="square file">d</div>
-              <div class="square file">e</div>
-              <div class="square file">f</div>
-              <div class="square file">g</div>
-              <div class="square file">h</div>
-            </div>
-            <div class="play-info">
-              <div class="bg-blue-lightest border-t border-b border-blue text-blue-dark px-4 py-3">
-                <div id="status" class="status">waiting for board ready</div>
+              </div>
+              <div class="chess-file">
+                <div class="square file">a</div>
+                <div class="square file">b</div>
+                <div class="square file">c</div>
+                <div class="square file">d</div>
+                <div class="square file">e</div>
+                <div class="square file">f</div>
+                <div class="square file">g</div>
+                <div class="square file">h</div>
+              </div>
+              <div class="play-info" id="playInfo">
+                <div class="bg-light">
+                  <div id="status" class="status">waiting for board ready</div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+        <div class="col-sm">
+          <span class="alert-warning">00:00:00</span>
         </div>
       </div>
     </div>
