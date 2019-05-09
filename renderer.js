@@ -129,6 +129,18 @@ class GameSaver {
     localStorage.removeItem(this._id);
     localStorage.removeItem(this._moveKey);
   }
+
+  undo(undoMoves) {
+    const saveMoves = localStorage[this._moveKey].split(" ").filter(x => x);
+    const last = _.last(saveMoves);
+    let count = undoMoves.length;
+    if (last.startsWith("undo")) {
+      count += parseInt(last.split("_")[1], 10);
+      saveMoves.pop();
+    }
+    saveMoves.push(`undo_${count}`);
+    localStorage.setItem(this._moveKey, saveMoves.join(" "));
+  }
 }
 
 function leaveProfile() {
@@ -187,8 +199,7 @@ async function start() {
   let profile = JSON.parse(localStorage.getItem("profile") || "{}");
   $("#leaveProfile").click(leaveProfile);
   $("#saveProfile").click(saveProfile);
-  const personaName = localStorage.getItem("persona") || "mickey";
-  let persona = switchPersona(personaName);
+  let persona = switchPersona(localStorage.getItem("persona") || "mickey");
 
   ipcRenderer.on("edit-profile", showProfile);
 
@@ -244,7 +255,7 @@ async function start() {
   let illegal;
   let game = null;
   let gameSaver;
-  let gameType = "Tournament";
+  let gameType = localStorage.getItem(`${persona.name}-game-type`) || "Tournament";
   let boardReady = false;
 
   const setBanner = banner => {
@@ -342,6 +353,7 @@ async function start() {
 
   const newGame = async (banner, reset) => {
     gameType = banner;
+
     setBanner(banner);
     setVsBanner();
 
@@ -383,6 +395,7 @@ async function start() {
     });
 
     setStatus("waiting for board ready");
+    localStorage.setItem(`${persona.name}-game-type`, gameType);
 
     onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
     board.on("changed", clearIllegalForBoardChanged);
@@ -391,7 +404,7 @@ async function start() {
     setTimeout(updatePlayerClock, 100);
   };
 
-  await newGame("Tournament", false);
+  await newGame(gameType, false);
 
   ipcRenderer.on("switch-persona", (event, name) => {
     if (persona.name !== name) {
@@ -408,6 +421,10 @@ async function start() {
   game.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
     updateBoard(boardRaw, null, wantRaw);
     setStatus("waiting for take back");
+  });
+
+  game.on("take-back", ({ moves }) => {
+    gameSaver.undo(moves);
   });
 
   game.on("ready", () => {
@@ -431,13 +448,16 @@ async function start() {
     boardReady = true;
   });
 
-  game.on("player-moved", ({ player, move }) => {
+  game.on("player-moved", ({ player, move, interrupted }) => {
     updateClockDisplay(player.color, player.getRemainingTime());
     gameSaver.updateMove(move.san);
-    if (game.turnColor === "black") {
-      playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
+
+    if (!interrupted) {
+      if (game.turnColor === "black") {
+        playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
+      }
+      showTurn();
     }
-    showTurn();
   });
 
   game.on("waiting-board-sync", ({ move, beforeRaw }) => {
