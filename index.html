@@ -7,6 +7,7 @@
 
     <style>
       .game-container {
+        display: none;
         width: 90%;
       }
       .persona-avatar {
@@ -160,9 +161,76 @@
         border: 2px solid;
         font-size: 1.5em;
       }
+
+      .welcome {
+        display: block;
+        width: 90%;
+      }
+
+      .persona-image {
+        width: 30%;
+        margin-left: 10%;
+      }
+
+      .persona-carousel {
+        width: 100%;
+        max-width: none;
+        height: auto;
+        border: 1px solid red;
+      }
     </style>
   </head>
   <body background="assets/tree-in-forest.jpg">
+    <div class="container-fluid welcome" id="welcome">
+      <div>
+        <div id="carouselPersonas" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner" id="carousel-inner"></div>
+          <a class="carousel-control-prev" href="#carouselPersonas" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+          </a>
+          <a class="carousel-control-next" href="#carouselPersonas" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+          </a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="dropdown">
+          <button
+            class="btn btn-primary dropdown-toggle btn-lg"
+            type="button"
+            id="dropdownMenuButton"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            New Game
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#" id="new-tournament">Tournament</a>
+            <a class="dropdown-item" href="#" id="new-tutorial">Training</a>
+          </div>
+        </div>
+        &nbsp;&nbsp;
+        <div class="dropdown">
+          <button
+            class="btn btn-primary dropdown-toggle btn-lg"
+            type="button"
+            id="dropdownMenuButton"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Resume Game
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#" id="resume-tournament">Tournament</a>
+            <a class="dropdown-item" href="#" id="resume-tutorial">Training</a>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="container user-profile bg-light" id="user-profile">
       <div class="form-row">
         <div class="col-md-5 mb-3">
@@ -303,29 +371,16 @@
     </div>
     <div class="container-fluid game-container" id="game-container">
       <div class="row" id="controls">
-        <div class=" my-2 col-sm-2">
-          <div class="dropdown">
-            <button
-              class="btn btn-primary dropdown-toggle btn-lg"
-              type="button"
-              id="dropdownMenuButton"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-            >
-              New Game
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <a class="dropdown-item" href="#" id="new-tournament">Tournament</a>
-              <a class="dropdown-item" href="#" id="new-tutorial">Training</a>
-            </div>
-          </div>
-        </div>
         <div class="alert alert-primary p-2 m-2 col-sm-3 text-center">
           <strong id="game-banner">Tournament</strong>
         </div>
         <div class="alert alert-warning p-2 my-2 mx-auto col-sm text-center">
           <strong id="vs-banner">?? vs ??</strong>
+        </div>
+        <div class="m-2 col-sm-2">
+          <button class="btn btn-warning btn-lg" type="button" id="resignButton">
+            <span class="text-danger font-weight-bold">Resign</span>
+          </button>
         </div>
       </div>
       <div class="row mt-3">
@@ -397,6 +452,9 @@
     </script>
     <script src="./src/bootstrap-4.3.1-dist/js/bootstrap.bundle.js"></script>
     <script>
+      $(".carousel").carousel({
+        interval: false
+      });
       // You can also require other files to run in this process
       require("./renderer.js");
     </script>

@@ -85,9 +85,27 @@ function switchPersona(personaName) {
   const avatarPath = `assets/${persona.assetDir}/${persona.images.default}`;
   document.getElementById("opponent-avatar").innerHTML = `<img src="${avatarPath}" />`;
   if (localStorage.getItem("persona") !== personaName) {
-    localStorage.setItem("persona", personaName);
+    localStorage.setItem("persona", persona.name);
   }
   return persona;
+}
+
+function showWelcome(activeName) {
+  const activePer = activeName ? personas.get(activeName) : null;
+  const htmls = personas.allIds().map((id, ix) => {
+    const per = personas.get(id);
+    const active = (activePer ? per.name === activePer.name : ix === 0) ? " active" : "";
+    return `<div class="carousel-item${active}">
+<img class="d-block persona-image"
+  src="assets/${per.assetDir}/${per.images.default}"
+  alt="${per.name}" />
+<div class="carousel-caption d-none d-md-block">
+  <h5>${per.firstName} ${per.lastName}</h5>
+</div>
+</div>`;
+  });
+  document.getElementById("carousel-inner").innerHTML = htmls.join("\n");
+  switchDisplay(MAIN_DISPLAYS, "welcome");
 }
 
 class GameSaver {
@@ -143,9 +161,25 @@ class GameSaver {
   }
 }
 
+const MAIN_DISPLAYS = ["welcome", "user-profile", "game-container"];
+
+const DISPLAY_HISTORY = [];
+
+function switchDisplay(all, active) {
+  if (!active) {
+    DISPLAY_HISTORY.pop();
+    active = DISPLAY_HISTORY.pop() || all[0];
+  }
+  if (_.last(DISPLAY_HISTORY) !== active) {
+    DISPLAY_HISTORY.push(active);
+  }
+  all.forEach(id => {
+    document.getElementById(id).style.display = id === active ? "block" : "none";
+  });
+}
+
 function leaveProfile() {
-  document.getElementById("user-profile").style.display = "none";
-  document.getElementById("game-container").style.display = "block";
+  switchDisplay(MAIN_DISPLAYS);
 }
 
 function showProfile() {
@@ -163,11 +197,18 @@ function showProfile() {
     $("#coachName").val(profile.coachName);
   }
 
-  document.getElementById("user-profile").style.display = "block";
-  document.getElementById("game-container").style.display = "none";
+  switchDisplay(MAIN_DISPLAYS, "user-profile");
+}
+
+function showGame() {
+  switchDisplay(MAIN_DISPLAYS, "game-container");
 }
 
 async function start() {
+  const savePersonaName = localStorage.getItem("persona") || "mickey";
+  let persona = switchPersona(savePersonaName);
+  showWelcome(savePersonaName);
+
   let adjustSizeTimer;
   let boardSz = 0;
 
@@ -194,12 +235,11 @@ async function start() {
     adjustSizeTimer = setTimeout(adjustBoardSize, 20);
   });
 
-  adjustBoardSize();
+  // adjustBoardSize();
 
   let profile = JSON.parse(localStorage.getItem("profile") || "{}");
   $("#leaveProfile").click(leaveProfile);
   $("#saveProfile").click(saveProfile);
-  let persona = switchPersona(localStorage.getItem("persona") || "mickey");
 
   ipcRenderer.on("edit-profile", showProfile);
 
@@ -209,7 +249,7 @@ async function start() {
     document.getElementById("vs-banner").innerHTML = `${playerName} vs. ${personaName}`;
   };
 
-  setVsBanner();
+  // setVsBanner();
 
   const db = await DB.initialize();
   const board = await connectDgtBoard();
@@ -257,6 +297,8 @@ async function start() {
   let gameSaver;
   let gameType = localStorage.getItem(`${persona.name}-game-type`) || "Tournament";
   let boardReady = false;
+  let audioPlaying = false;
+  let lastPlayed;
 
   const setBanner = banner => {
     document.getElementById("game-banner").innerHTML = banner;
@@ -279,9 +321,6 @@ async function start() {
   const onChanged = positions => {
     updateBoard(game.getBoardRaw(), null, positions.wantRaw);
   };
-
-  let audioPlaying = false;
-  let lastPlayed;
 
   const showTurn = raw => {
     raw = raw || game.getGameRaw();
@@ -352,6 +391,7 @@ async function start() {
   };
 
   const newGame = async (banner, reset) => {
+    console.log(`new ${banner} game`);
     gameType = banner;
 
     setBanner(banner);
@@ -376,7 +416,7 @@ async function start() {
     const whiteTotalTime = 60 * 1000 * 60;
     const blackTotalTime = 10 * 1000 * 60;
 
-    game = await startChess(game, board, {
+    const gameInst = await startChess(game, board, {
       allowTakeback,
       blackInfo: {
         firstName: persona.firstName,
@@ -394,6 +434,11 @@ async function start() {
       moves: gameSaver.getMoves()
     });
 
+    if (!game) {
+      initializeGameEvents(gameInst);
+      game = gameInst;
+    }
+
     setStatus("waiting for board ready");
     localStorage.setItem(`${persona.name}-game-type`, gameType);
 
@@ -402,9 +447,12 @@ async function start() {
     updateClockDisplay("black", blackTotalTime);
     updateClockDisplay("white", whiteTotalTime);
     setTimeout(updatePlayerClock, 100);
+    setTimeout(adjustBoardSize, 1);
   };
 
-  await newGame(gameType, false);
+  // await newGame(gameType, false);
+
+  // showWelcome(savePersonaName);
 
   ipcRenderer.on("switch-persona", (event, name) => {
     if (persona.name !== name) {
@@ -416,112 +464,122 @@ async function start() {
     }
   });
 
-  game.on("wait-start", onChanged);
+  const initializeGameEvents = gameInst => {
+    gameInst.on("wait-start", onChanged);
 
-  game.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
-    updateBoard(boardRaw, null, wantRaw);
-    setStatus("waiting for take back");
-  });
+    gameInst.on("take-back-wait-board-ready", ({ boardRaw, wantRaw }) => {
+      updateBoard(boardRaw, null, wantRaw);
+      setStatus("waiting for take back");
+    });
 
-  game.on("take-back", ({ moves }) => {
-    gameSaver.undo(moves);
-  });
+    gameInst.on("take-back", ({ moves }) => {
+      gameSaver.undo(moves);
+    });
 
-  game.on("ready", () => {
-    boardReady = true;
-    const readySound = _.get(persona, "actions.ready.sound");
-    if (readySound) {
-      const groupId = readySound.groupId || "sounds";
-      playAudio(persona.sounds[groupId], persona.assetDir, readySound.id);
-    }
-    showTurn();
-  });
-
-  game.on("board-ready", ({ boardRaw }) => {
-    console.log("board-ready");
-    boardReady = true;
-    showTurn(boardRaw);
-  });
-
-  game.on("board-synced", () => {
-    console.log("board-synced");
-    boardReady = true;
-  });
-
-  game.on("player-moved", ({ player, move, interrupted }) => {
-    updateClockDisplay(player.color, player.getRemainingTime());
-    gameSaver.updateMove(move.san);
-
-    if (!interrupted) {
-      if (game.turnColor === "black") {
-        playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
+    gameInst.on("ready", () => {
+      boardReady = true;
+      const readySound = _.get(persona, "actions.ready.sound");
+      if (readySound) {
+        const groupId = readySound.groupId || "sounds";
+        playAudio(persona.sounds[groupId], persona.assetDir, readySound.id);
       }
       showTurn();
-    }
-  });
+    });
 
-  game.on("waiting-board-sync", ({ move, beforeRaw }) => {
-    setStatus(
-      `<span class="text-red-dark font-weight-bold">${move.san}</span>
-position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
-    );
-    boardReady = false;
-    updateBoard(game.getGameRaw(), beforeRaw);
-  });
+    gameInst.on("board-ready", ({ boardRaw }) => {
+      console.log("board-ready");
+      boardReady = true;
+      showTurn(boardRaw);
+    });
 
-  game.on("board-not-sync-change", () => {
-    playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
-  });
+    gameInst.on("board-synced", () => {
+      console.log("board-synced");
+      boardReady = true;
+    });
 
-  game.on("game-over", async result => {
-    setStatus(`Gameover, ${result.result}`);
-    const black = game.getPlayer("black");
-    const white = game.getPlayer("white");
+    gameInst.on("player-moved", ({ player, move, interrupted }) => {
+      updateClockDisplay(player.color, player.getRemainingTime());
+      gameSaver.updateMove(move.san);
 
-    let bpt = 5;
-    let wpt = 5;
-
-    if (result.winner) {
-      bpt = result.winner === "black" ? 10 : 0;
-      wpt = result.winner === "white" ? 10 : 0;
-    }
-    await db.add("games", {
-      type: gameType,
-      date: Math.floor(Date.now() / 1000),
-      fen: gameSaver.getInitFenPos(),
-      moves: gameSaver.getMoves(),
-      black: {
-        name: black.name,
-        point: bpt
-      },
-      white: {
-        name: white.name,
-        point: wpt
+      if (!interrupted) {
+        if (gameInst.turnColor === "black") {
+          playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
+        }
+        showTurn();
       }
     });
-    gameSaver.clear();
-  });
 
-  game.on("illegal-move", ({ move, color }) => {
-    if (color === "white") {
-      illegal = { move, color };
+    gameInst.on("waiting-board-sync", ({ move, beforeRaw }) => {
+      setStatus(
+        `<span class="text-red-dark font-weight-bold">${move.san}</span>
+position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
+      );
+      boardReady = false;
+      updateBoard(gameInst.getGameRaw(), beforeRaw);
+    });
+
+    gameInst.on("board-not-sync-change", () => {
       playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
-      setStatus(`${color}: \
+    });
+
+    gameInst.on("game-over", async result => {
+      setStatus(`Gameover, ${result.result}`);
+      const black = gameInst.getPlayer("black");
+      const white = gameInst.getPlayer("white");
+
+      let bpt = 5;
+      let wpt = 5;
+
+      if (result.winner) {
+        bpt = result.winner === "black" ? 10 : 0;
+        wpt = result.winner === "white" ? 10 : 0;
+      }
+      await db.add("games", {
+        type: gameType,
+        date: Math.floor(Date.now() / 1000),
+        fen: gameSaver.getInitFenPos(),
+        moves: gameSaver.getMoves(),
+        black: {
+          name: black.name,
+          point: bpt
+        },
+        white: {
+          name: white.name,
+          point: wpt
+        }
+      });
+      gameSaver.clear();
+    });
+
+    gameInst.on("illegal-move", ({ move, color }) => {
+      if (color === "white") {
+        illegal = { move, color };
+        playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
+        setStatus(`${color}: \
 <span class="text-red">illegal move </span>\
 <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`);
-    }
-  });
+      }
+    });
+  };
 
   document.getElementById("new-tournament").addEventListener("click", async () => {
-    console.log("new tournament");
-    await game.reset();
     await newGame("Tournament", true);
+    showGame();
   });
 
   document.getElementById("new-tutorial").addEventListener("click", async () => {
-    console.log("new tournament");
-    await game.reset();
     await newGame("Training", true);
+    showGame();
+  });
+
+  document.getElementById("resume-tournament").addEventListener("click", async () => {
+    await newGame("Tournament", false);
+    showGame();
+  });
+
+  document.getElementById("resume-tutorial").addEventListener("click", async () => {
+    await newGame("Training", false);
+    showGame();
   });
 
   document.addEventListener("keyup", e => {
@@ -531,6 +589,13 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
       }
     }
   });
+
+  $("#carouselPersonas").on("slid.bs.carousel", e => {
+    // console.log("carousel persona", e);
+    const id = personas.allIds()[e.to];
+    persona = switchPersona(id);
+  });
 }
 
+// showWelcome("mickey");
 start();
