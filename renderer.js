@@ -341,7 +341,9 @@ async function start() {
   const showTurn = raw => {
     raw = raw || game.getGameRaw();
     setStatus(game.turnColor + " turn");
-    // playAudio(MOVE_SOUNDS, "sound/English", `${game.turnColor}move`);
+    if (game.turnColor === "white") {
+      playAudio(MOVE_SOUNDS, "sound/English", `${game.turnColor}move`);
+    }
     updateBoard(raw);
   };
 
