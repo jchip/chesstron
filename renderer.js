@@ -314,7 +314,6 @@ async function start() {
   let gameType = localStorage.getItem(`${persona.name}-game-type`) || "Tournament";
   let boardReady = false;
   let audioPlaying = false;
-  let lastPlayed;
 
   const setBanner = banner => {
     document.getElementById("game-banner").innerHTML = banner;
@@ -349,15 +348,20 @@ async function start() {
 
   let audioPlayQueue = [];
 
-  const playAudio = (sounds, folder, force, wait, triggerProb = 35) => {
-    if ((audioPlayQueue.length > 0 || audioPlaying) && wait) {
-      return audioPlayQueue.push(() => playAudio(sounds, folder, force, wait, triggerProb));
+  const playAudio = (sounds, folder, force, wait = true, triggerProb = 35) => {
+    if (
+      wait !== "NoQueue" &&
+      (audioPlaying || (audioPlayQueue.length > 0 && wait !== "dequeued"))
+    ) {
+      // console.log("queueing audio", folder, force, wait, triggerProb);
+      return wait && audioPlayQueue.push([sounds, folder, force, "dequeued", triggerProb]);
     }
     const scaler = 100;
     const shouldPlay = Math.random() * 100 * scaler;
     const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
     const high = low + triggerProb * scaler;
-    if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
+    // console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
+    if (force || (shouldPlay >= low && shouldPlay < high)) {
       let name;
       if (typeof force === "string") {
         name = force;
@@ -365,27 +369,34 @@ async function start() {
         name = force.shift();
       } else {
         const keys = Object.keys(sounds);
-        do {
-          const ix = Math.floor(Math.random() * keys.length);
-          name = keys[ix];
-        } while (keys.length > 1 && lastPlayed === name);
-        lastPlayed = name;
+        const ix = Math.floor(Math.random() * keys.length);
+        name = keys[ix];
       }
       const sound = sounds[name];
-      if (!folder.startsWith("sound/")) {
-        folder = `${folder}/audio`;
-      }
-      const audio = new Audio(`assets/${folder}/${sound}`);
+      const folder2 = !folder.startsWith("sound/") ? `${folder}/audio` : folder;
+      const audio = new Audio(`assets/${folder2}/${sound}`);
       audioPlaying = true;
       audio.play();
-      audio.onended = () => {
+      let called = false;
+      const ended = () => {
+        // console.log("playing audio ended");
+        if (called) return;
+        called = true;
         audioPlaying = false;
         if (Array.isArray(force) && force.length > 0) {
-          playAudio(sounds, folder, force);
+          // console.log("next audio", force);
+          playAudio(sounds, folder, force, "NoQueue", triggerProb);
         } else if (audioPlayQueue.length > 0) {
-          audioPlayQueue.shift()();
+          // console.log("dequeue audio");
+          playAudio(...audioPlayQueue.shift());
+        } else {
+          // console.log("no more audio");
         }
       };
+      audio.onended = ended;
+      audio.onabort = ended;
+      audio.oncancel = ended;
+      audio.onerror = ended;
     }
   };
 
@@ -585,27 +596,29 @@ async function start() {
         `<span class="text-red-dark font-weight-bold">${move.san}</span>
 position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
       );
-      const detailMove = destructSan(move.san);
-      if (detailMove.castling) {
-        playAudio(
-          MOVE_SOUNDS,
-          "sound/English",
-          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x),
-          true
-        );
-      } else {
-        const { piece, disambiguator, capture, to, promotion, check } = detailMove;
-        const audios = [
-          move.ep_square ? "enpassant" : pieceLetterMap[piece],
-          disambiguator && `${disambiguator}from`,
-          capture ? "takes" : "to",
-          `${to[0]}from`,
-          `${to[1]}to`,
-          promotion && "promotesto",
-          promotion && pieceLetterMap(promotion.toLowerCase()),
-          check
-        ].filter(x => x);
-        playAudio(MOVE_SOUNDS, "sound/English", audios, true);
+      if (move.color === "b") {
+        const detailMove = destructSan(move.san);
+        if (detailMove.castling) {
+          playAudio(
+            MOVE_SOUNDS,
+            "sound/English",
+            [detailMove.castling.toLowerCase(), detailMove.check].filter(x => x),
+            true
+          );
+        } else {
+          const { piece, disambiguator, capture, to, promotion, check } = detailMove;
+          const audios = [
+            move.ep_square ? "enpassant" : pieceLetterMap[piece],
+            disambiguator && `${disambiguator}from`,
+            capture ? "takes" : "to",
+            `${to[0]}from`,
+            `${to[1]}to`,
+            promotion && "promotesto",
+            promotion && pieceLetterMap(promotion.toLowerCase()),
+            check
+          ].filter(x => x);
+          playAudio(MOVE_SOUNDS, "sound/English", audios, true);
+        }
       }
       boardReady = false;
       updateBoard(gameInst.getGameRaw(), beforeRaw);
