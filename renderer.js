@@ -439,6 +439,7 @@ async function start() {
       game = gameInst;
     }
 
+    document.getElementById("game-exit-action").innerText = "Resign";
     setStatus("waiting for board ready");
     localStorage.setItem(`${persona.name}-game-type`, gameType);
 
@@ -463,6 +464,36 @@ async function start() {
       setVsBanner();
     }
   });
+
+  const saveGameResult = async result => {
+    const black = game.getPlayer("black");
+    const white = game.getPlayer("white");
+
+    let bpt = 5;
+    let wpt = 5;
+
+    if (result.winner) {
+      bpt = result.winner === "black" ? 10 : 0;
+      wpt = result.winner === "white" ? 10 : 0;
+    }
+
+    await db.add("games", {
+      type: gameType,
+      date: Math.floor(Date.now() / 1000),
+      fen: gameSaver.getInitFenPos(),
+      moves: gameSaver.getMoves(),
+      result: result.result,
+      black: {
+        name: black.name,
+        point: bpt
+      },
+      white: {
+        name: white.name,
+        point: wpt
+      }
+    });
+    gameSaver.clear();
+  };
 
   const initializeGameEvents = gameInst => {
     gameInst.on("wait-start", onChanged);
@@ -524,31 +555,7 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
 
     gameInst.on("game-over", async result => {
       setStatus(`Gameover, ${result.result}`);
-      const black = gameInst.getPlayer("black");
-      const white = gameInst.getPlayer("white");
-
-      let bpt = 5;
-      let wpt = 5;
-
-      if (result.winner) {
-        bpt = result.winner === "black" ? 10 : 0;
-        wpt = result.winner === "white" ? 10 : 0;
-      }
-      await db.add("games", {
-        type: gameType,
-        date: Math.floor(Date.now() / 1000),
-        fen: gameSaver.getInitFenPos(),
-        moves: gameSaver.getMoves(),
-        black: {
-          name: black.name,
-          point: bpt
-        },
-        white: {
-          name: white.name,
-          point: wpt
-        }
-      });
-      gameSaver.clear();
+      await saveGameResult(result);
     });
 
     gameInst.on("illegal-move", ({ move, color }) => {
@@ -580,6 +587,21 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
   document.getElementById("resume-tutorial").addEventListener("click", async () => {
     await newGame("Training", false);
     showGame();
+  });
+
+  document.getElementById("resign-button").addEventListener("click", async (a, b) => {
+    const action = document.getElementById("game-exit-action");
+    const text = action.innerText;
+    if (text === "Resign") {
+      setStatus(`Gameover, you resigned`);
+      await saveGameResult({
+        winner: "black",
+        result: "white resigned"
+      });
+      action.innerText = "Exit";
+    } else if (text === "Exit") {
+      showWelcome();
+    }
   });
 
   document.addEventListener("keyup", e => {
