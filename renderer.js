@@ -351,7 +351,7 @@ async function start() {
 
   const playAudio = (sounds, folder, force, wait, triggerProb = 35) => {
     if ((audioPlayQueue.length > 0 || audioPlaying) && wait) {
-      return audioPlayQueue.push(() => playAudio(sounds, folder, force, wait, triggerProb))
+      return audioPlayQueue.push(() => playAudio(sounds, folder, force, wait, triggerProb));
     }
     const scaler = 100;
     const shouldPlay = Math.random() * 100 * scaler;
@@ -590,12 +590,13 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
         playAudio(
           MOVE_SOUNDS,
           "sound/English",
-          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x), true
+          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x),
+          true
         );
       } else {
         const { piece, disambiguator, capture, to, promotion, check } = detailMove;
         const audios = [
-          pieceLetterMap[piece],
+          move.ep_square ? "enpassant" : pieceLetterMap[piece],
           disambiguator && `${disambiguator}from`,
           capture ? "takes" : "to",
           `${to[0]}from`,
