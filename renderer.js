@@ -10,6 +10,16 @@ const _ = require("lodash");
 const { ipcRenderer } = require("electron");
 const personas = require("./lib/personas");
 const DB = require("./lib/db");
+const destructSan = require("./destruct-san");
+
+const pieceLetterMap = {
+  p: "pawn",
+  r: "rook",
+  n: "knight",
+  b: "bishop",
+  q: "queen",
+  k: "king"
+};
 
 const unicodePieces = {
   K: "\u2654",
@@ -204,6 +214,8 @@ function showGame() {
   switchDisplay(MAIN_DISPLAYS, "game-container");
 }
 
+const MOVE_SOUNDS = require("./sounds2.json");
+
 async function start() {
   const savePersonaName = localStorage.getItem("persona") || "mickey";
   let persona = switchPersona(savePersonaName);
@@ -247,6 +259,10 @@ async function start() {
     const playerName = [profile.firstName, profile.lastName].filter(x => x).join(" ") || "player";
     const personaName = [persona.firstName, persona.lastName].filter(x => x).join(" ") || "???";
     document.getElementById("vs-banner").innerHTML = `${playerName} vs. ${personaName}`;
+  };
+
+  const setExitButton = action => {
+    document.getElementById("game-exit-action").innerText = action || "Exit";
   };
 
   // setVsBanner();
@@ -325,18 +341,26 @@ async function start() {
   const showTurn = raw => {
     raw = raw || game.getGameRaw();
     setStatus(game.turnColor + " turn");
+    // playAudio(MOVE_SOUNDS, "sound/English", `${game.turnColor}move`);
     updateBoard(raw);
   };
 
-  const playAudio = (sounds, folder, force, triggerProb = 35) => {
+  const playAudio = (sounds, folder, force, wait, triggerProb = 35) => {
     const scaler = 100;
     const shouldPlay = Math.random() * 100 * scaler;
     const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
     const high = low + triggerProb * scaler;
+    if (audioPlaying && wait) {
+      return setTimeout(() => {
+        playAudio(sounds, folder, force, wait, triggerProb);
+      }, 50);
+    }
     if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
       let name;
       if (typeof force === "string") {
         name = force;
+      } else if (Array.isArray(force)) {
+        name = force.shift();
       } else {
         const keys = Object.keys(sounds);
         do {
@@ -346,11 +370,17 @@ async function start() {
         lastPlayed = name;
       }
       const sound = sounds[name];
-      const audio = new Audio(`assets/${folder}/audio/${sound}`);
+      if (!folder.startsWith("sound/")) {
+        folder = `${folder}/audio`;
+      }
+      const audio = new Audio(`assets/${folder}/${sound}`);
       audioPlaying = true;
       audio.play();
       audio.onended = () => {
         audioPlaying = false;
+        if (Array.isArray(force) && force.length > 0) {
+          playAudio(sounds, folder, force);
+        }
       };
     }
   };
@@ -439,7 +469,7 @@ async function start() {
       game = gameInst;
     }
 
-    document.getElementById("game-exit-action").innerText = "Resign";
+    setExitButton();
     setStatus("waiting for board ready");
     localStorage.setItem(`${persona.name}-game-type`, gameType);
 
@@ -513,6 +543,8 @@ async function start() {
 
     gameInst.on("ready", () => {
       boardReady = true;
+      setExitButton("Resign");
+
       const readySound = _.get(persona, "actions.ready.sound");
       if (readySound) {
         const groupId = readySound.groupId || "sounds";
@@ -549,6 +581,23 @@ async function start() {
         `<span class="text-red-dark font-weight-bold">${move.san}</span>
 position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
       );
+      const detailMove = destructSan(move.san);
+      if (detailMove.castling) {
+        playAudio(MOVE_SOUNDS, "sound/English", [detailMove.castling, detailMove.check]);
+      } else {
+        const { piece, disambiguator, capture, to, promotion, check } = detailMove;
+        const audios = [
+          pieceLetterMap[piece],
+          disambiguator && `${disambiguator}from`,
+          capture ? "takes" : "to",
+          `${to[0]}from`,
+          `${to[1]}to`,
+          promotion && "promotesto",
+          promotion && pieceLetterMap(promotion.toLowerCase()),
+          check
+        ].filter(x => x);
+        playAudio(MOVE_SOUNDS, "sound/English", audios);
+      }
       boardReady = false;
       updateBoard(gameInst.getGameRaw(), beforeRaw);
     });
@@ -560,6 +609,7 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
     gameInst.on("game-over", async result => {
       setStatus(`Gameover, ${result.result}`);
       await saveGameResult(result);
+      setExitButton();
     });
 
     gameInst.on("illegal-move", ({ move, color }) => {
@@ -602,7 +652,7 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
         winner: "black",
         result: "white resigned"
       });
-      action.innerText = "Exit";
+      setExitButton();
     } else if (text === "Exit") {
       showWelcome();
     }
