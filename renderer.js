@@ -469,6 +469,10 @@ async function start() {
     const black = game.getPlayer("black");
     const white = game.getPlayer("white");
 
+    if (!black || !white) {
+      return;
+    }
+
     let bpt = 5;
     let wpt = 5;
 
