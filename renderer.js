@@ -583,7 +583,11 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
       );
       const detailMove = destructSan(move.san);
       if (detailMove.castling) {
-        playAudio(MOVE_SOUNDS, "sound/English", [detailMove.castling, detailMove.check]);
+        playAudio(
+          MOVE_SOUNDS,
+          "sound/English",
+          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x)
+        );
       } else {
         const { piece, disambiguator, capture, to, promotion, check } = detailMove;
         const audios = [
