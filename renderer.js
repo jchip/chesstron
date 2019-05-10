@@ -342,21 +342,21 @@ async function start() {
     raw = raw || game.getGameRaw();
     setStatus(game.turnColor + " turn");
     if (game.turnColor === "white") {
-      playAudio(MOVE_SOUNDS, "sound/English", `${game.turnColor}move`);
+      playAudio(MOVE_SOUNDS, "sound/English", `${game.turnColor}move`, true);
     }
     updateBoard(raw);
   };
 
+  let audioPlayQueue = [];
+
   const playAudio = (sounds, folder, force, wait, triggerProb = 35) => {
+    if ((audioPlayQueue.length > 0 || audioPlaying) && wait) {
+      return audioPlayQueue.push(() => playAudio(sounds, folder, force, wait, triggerProb))
+    }
     const scaler = 100;
     const shouldPlay = Math.random() * 100 * scaler;
     const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
     const high = low + triggerProb * scaler;
-    if (audioPlaying && wait) {
-      return setTimeout(() => {
-        playAudio(sounds, folder, force, wait, triggerProb);
-      }, 50);
-    }
     if (!audioPlaying && (force || (shouldPlay >= low && shouldPlay < high))) {
       let name;
       if (typeof force === "string") {
@@ -382,6 +382,8 @@ async function start() {
         audioPlaying = false;
         if (Array.isArray(force) && force.length > 0) {
           playAudio(sounds, folder, force);
+        } else if (audioPlayQueue.length > 0) {
+          audioPlayQueue.shift()();
         }
       };
     }
@@ -550,7 +552,7 @@ async function start() {
       const readySound = _.get(persona, "actions.ready.sound");
       if (readySound) {
         const groupId = readySound.groupId || "sounds";
-        playAudio(persona.sounds[groupId], persona.assetDir, readySound.id);
+        playAudio(persona.sounds[groupId], persona.assetDir, readySound.id, true);
       }
       showTurn();
     });
@@ -572,7 +574,7 @@ async function start() {
 
       if (!interrupted) {
         if (gameInst.turnColor === "black") {
-          playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir);
+          playAudio(_.get(persona, "sounds.moveChat"), persona.assetDir, false, true);
         }
         showTurn();
       }
@@ -588,7 +590,7 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
         playAudio(
           MOVE_SOUNDS,
           "sound/English",
-          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x)
+          [detailMove.castling.toLowerCase, detailMove.check].filter(x => x), true
         );
       } else {
         const { piece, disambiguator, capture, to, promotion, check } = detailMove;
@@ -602,14 +604,14 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
           promotion && pieceLetterMap(promotion.toLowerCase()),
           check
         ].filter(x => x);
-        playAudio(MOVE_SOUNDS, "sound/English", audios);
+        playAudio(MOVE_SOUNDS, "sound/English", audios, true);
       }
       boardReady = false;
       updateBoard(gameInst.getGameRaw(), beforeRaw);
     });
 
     gameInst.on("board-not-sync-change", () => {
-      playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true);
+      playAudio(_.get(persona, "sounds.illegalMove"), persona.assetDir, true, true);
     });
 
     gameInst.on("game-over", async result => {
