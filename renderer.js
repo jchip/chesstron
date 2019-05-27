@@ -171,7 +171,7 @@ class GameSaver {
   }
 }
 
-const MAIN_DISPLAYS = ["welcome", "user-profile", "game-container"];
+const MAIN_DISPLAYS = ["welcome", "user-profile", "game-container", "game-list-view"];
 
 const DISPLAY_HISTORY = [];
 
@@ -208,6 +208,10 @@ function showProfile() {
   }
 
   switchDisplay(MAIN_DISPLAYS, "user-profile");
+}
+
+function showGameList() {
+  switchDisplay(MAIN_DISPLAYS, "game-list-view");
 }
 
 function showGame() {
@@ -667,6 +671,10 @@ position <span class="magenta"> ${move.from} </span> \u2192
   document.getElementById("resume-tutorial").addEventListener("click", async () => {
     await newGame("Training", false);
     showGame();
+  });
+
+  document.getElementById("reviewGameButton").addEventListener("click", async () => {
+    showGameList();
   });
 
   document.getElementById("resign-button").addEventListener("click", async (a, b) => {
