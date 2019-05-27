@@ -383,11 +383,8 @@ async function start() {
     const audio = new Audio(`assets/${folder2}/${sound}`);
     audioPlaying = true;
     audio.play();
-    let called = false;
-    const ended = () => {
+    const ended = _.once(() => {
       // console.log("playing audio ended");
-      if (called) return;
-      called = true;
       audioPlaying = false;
       if (Array.isArray(force) && force.length > 0) {
         // console.log("next audio", force);
@@ -398,7 +395,7 @@ async function start() {
       } else {
         // console.log("no more audio");
       }
-    };
+    });
 
     audio.onended = ended;
     audio.onabort = ended;
