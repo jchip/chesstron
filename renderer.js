@@ -255,10 +255,11 @@ async function showGameList(db) {
     return `<span class="badge ${clazz}">${t}</span>`;
   };
 
+  const rowClasses = ["table-primary", "table-secondary"];
   const html = games.map((g, ix) => {
     const dateStr = new Date(g.date * 1000).toLocaleString();
     const moveCount = Math.floor(g.moves.split(" ").length / 2);
-    return `<tr>
+    return `<tr class="${rowClasses[ix % 2]}">
   <td><span class="badge badge-info">${dateStr}</span></td>
   <td>${getTypeString(g.type)}</td>
   <td>${getPlayerString(g.white)}
