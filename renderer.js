@@ -258,19 +258,19 @@ async function showGameList(db) {
   const html = games.map((g, ix) => {
     const dateStr = new Date(g.date * 1000).toLocaleString();
     const moveCount = Math.floor(g.moves.split(" ").length / 2);
-    return `<li class="list-group-item">
-  <span class="badge badge-info">${dateStr}</span>
-  ${getTypeString(g.type)}
-  ${getPlayerString(g.white)}
+    return `<tr>
+  <td><span class="badge badge-info">${dateStr}</span></td>
+  <td>${getTypeString(g.type)}</td>
+  <td>${getPlayerString(g.white)}
   <span class="badge badge-warning">vs</span>
-  ${getPlayerString(g.black)}
-  <span class="badge badge-info" title="${g.moves}" id="game-result-${ix}">${g.result || ""}
+  ${getPlayerString(g.black)}</td>
+  <td><span class="badge badge-info" title="${g.moves}" id="game-result-${ix}">${g.result || ""}
     <span class="badge badge-light">${moveCount}</span>
-  </span>
-  <button class="btn btn-primary btn-sm" id="copy-moves-button-${ix}" onclick="copyPGN(${ix})">
+  </span></td>
+  <td><button class="btn btn-primary btn-sm" id="copy-moves-button-${ix}" onclick="copyPGN(${ix})">
     Copy PGN
-  </button>
-</li>
+  </button></td>
+</tr>
 `;
   });
   document.getElementById("game-list-group").innerHTML = html.join("");
