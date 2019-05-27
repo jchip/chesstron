@@ -353,14 +353,14 @@ async function start() {
       wait !== "NoQueue" &&
       (audioPlaying || (audioPlayQueue.length > 0 && wait !== "dequeued"))
     ) {
-      // console.log("queueing audio", folder, force, wait, triggerProb);
+      console.log("queueing audio", folder, force, wait, triggerProb);
       return wait && audioPlayQueue.push([sounds, folder, force, "dequeued", triggerProb]);
     }
     const scaler = 100;
     const shouldPlay = Math.random() * 100 * scaler;
     const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
     const high = low + triggerProb * scaler;
-    // console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
+    console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
     if (force || (shouldPlay >= low && shouldPlay < high)) {
       let name;
       if (typeof force === "string") {
@@ -379,18 +379,18 @@ async function start() {
       audio.play();
       let called = false;
       const ended = () => {
-        // console.log("playing audio ended");
+        console.log("playing audio ended");
         if (called) return;
         called = true;
         audioPlaying = false;
         if (Array.isArray(force) && force.length > 0) {
-          // console.log("next audio", force);
+          console.log("next audio", force);
           playAudio(sounds, folder, force, "NoQueue", triggerProb);
         } else if (audioPlayQueue.length > 0) {
-          // console.log("dequeue audio");
+          console.log("dequeue audio");
           playAudio(...audioPlayQueue.shift());
         } else {
-          // console.log("no more audio");
+          console.log("no more audio");
         }
       };
       audio.onended = ended;
@@ -459,7 +459,7 @@ async function start() {
     board.removeAllListeners();
 
     const whiteTotalTime = 60 * 1000 * 60;
-    const blackTotalTime = 10 * 1000 * 60;
+    const blackTotalTime = 60 * 1000 * 60;
 
     const gameInst = await startChess(game, board, {
       allowTakeback,
@@ -594,7 +594,8 @@ async function start() {
     gameInst.on("waiting-board-sync", ({ move, beforeRaw }) => {
       setStatus(
         `<span class="text-red-dark font-weight-bold">${move.san}</span>
-position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
+position <span class="magenta"> ${move.from} </span> \u2192
+<span class="text-green"> ${move.to} </span>`
       );
       if (move.color === "b") {
         const detailMove = destructSan(move.san);
@@ -614,7 +615,7 @@ position <span class="text-green"> ${move.from} \u2192 ${move.to} </span>`
             `${to[0]}from`,
             `${to[1]}to`,
             promotion && "promotesto",
-            promotion && pieceLetterMap(promotion.toLowerCase()),
+            promotion && pieceLetterMap[promotion.toLowerCase()],
             check
           ].filter(x => x);
           playAudio(MOVE_SOUNDS, "sound/English", audios, true);
