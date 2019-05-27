@@ -178,6 +178,12 @@
         height: auto;
         border: 1px solid red;
       }
+
+      .list-group {
+        max-height: 500px;
+        margin-bottom: 10px;
+        overflow: scroll;
+      }
     </style>
   </head>
   <body background="assets/tree-in-forest.jpg">
@@ -444,7 +450,32 @@
     </div>
 
     <div class="container-fluid game-container" id="game-list-view">
-      Game List
+      <div class="panel panel-primary">
+        <div class="panel-heading alert alert-primary">
+          <strong class="panel-title">Games List</strong>
+          <button type="button" class="close" id="games-list-close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="panel-body">
+          <ul class="list-group" id="game-list-group">
+            <li class="list-group-item">
+              <span class="badge badge-info">5/9/2019, 5:42:21 PM</span>
+              <span class="badge badge-primary">Tournament</span
+              ><span class="badge badge-success">Micky Mouse</span
+              ><span class="badge badge-warning">vs</span
+              ><span class="badge badge-secondary">Daddy Chen</span>
+              <span class="badge badge-info"
+                >white resigned
+                <span class="badge badge-light">52</span>
+              </span>
+              <button class="btn btn-primary btn-sm">
+                Copy PGN
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <script>

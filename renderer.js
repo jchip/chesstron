@@ -7,7 +7,7 @@
 const { startChess, connectDgtBoard } = require("dgt-board/index");
 const utils = require("dgt-board/lib/utils");
 const _ = require("lodash");
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, clipboard } = require("electron");
 const personas = require("./lib/personas");
 const DB = require("./lib/db");
 const destructSan = require("./destruct-san");
@@ -210,7 +210,70 @@ function showProfile() {
   switchDisplay(MAIN_DISPLAYS, "user-profile");
 }
 
-function showGameList() {
+let LAST_COPY_MOVES_BUTTON;
+
+function copyPGN(ix) {
+  const el = document.getElementById(`copy-moves-button-${ix}`);
+
+  const result = document.getElementById(`game-result-${ix}`);
+  const moves = result.title;
+
+  if (LAST_COPY_MOVES_BUTTON) {
+    LAST_COPY_MOVES_BUTTON.innerText = "Copy PGN";
+  }
+  LAST_COPY_MOVES_BUTTON = el;
+  el.innerText = "Copy PGN \u2713";
+  clipboard.writeText(moves);
+}
+
+async function showGameList(db) {
+  if (!window.copyPGN) {
+    window.copyPGN = copyPGN;
+    $("#games-list-close").on("click", () => {
+      switchDisplay(MAIN_DISPLAYS);
+    });
+  }
+
+  const games = await db.getAll("games");
+
+  const getPlayerWinClass = p => {
+    if (p.point === 10) {
+      return "badge-success";
+    }
+
+    return "badge-secondary";
+  };
+
+  const getPlayerString = p => {
+    const x = p.name.indexOf("(");
+    const name = p.name.substr(0, x > 0 ? x : p.name.length).trim();
+    return `<span class="badge ${getPlayerWinClass(p)}" title="${p.name}">${name}</span>`;
+  };
+
+  const getTypeString = t => {
+    const clazz = t === "Tournament" ? "badge-danger" : "badge-primary";
+    return `<span class="badge ${clazz}">${t}</span>`;
+  };
+
+  const html = games.map((g, ix) => {
+    const dateStr = new Date(g.date * 1000).toLocaleString();
+    const moveCount = Math.floor(g.moves.split(" ").length / 2);
+    return `<li class="list-group-item">
+  <span class="badge badge-info">${dateStr}</span>
+  ${getTypeString(g.type)}
+  ${getPlayerString(g.white)}
+  <span class="badge badge-warning">vs</span>
+  ${getPlayerString(g.black)}
+  <span class="badge badge-info" title="${g.moves}" id="game-result-${ix}">${g.result || ""}
+    <span class="badge badge-light">${moveCount}</span>
+  </span>
+  <button class="btn btn-primary btn-sm" id="copy-moves-button-${ix}" onclick="copyPGN(${ix})">
+    Copy PGN
+  </button>
+</li>
+`;
+  });
+  document.getElementById("game-list-group").innerHTML = html.join("");
   switchDisplay(MAIN_DISPLAYS, "game-list-view");
 }
 
@@ -674,7 +737,7 @@ position <span class="magenta"> ${move.from} </span> \u2192
   });
 
   document.getElementById("reviewGameButton").addEventListener("click", async () => {
-    showGameList();
+    showGameList(db);
   });
 
   document.getElementById("resign-button").addEventListener("click", async (a, b) => {
