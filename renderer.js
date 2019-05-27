@@ -335,8 +335,8 @@ async function start() {
 
   // setVsBanner();
 
+  let dgtBoard;
   const db = await DB.initialize();
-  const board = await connectDgtBoard();
 
   function saveProfile() {
     const firstName = $("#profileFirstname").val();
@@ -508,6 +508,10 @@ async function start() {
 
   const newGame = async (banner, reset) => {
     console.log(`new ${banner} game`);
+    if (!dgtBoard) {
+      dgtBoard = await connectDgtBoard();
+    }
+
     gameType = banner;
 
     setBanner(banner);
@@ -527,12 +531,12 @@ async function start() {
 
     const allowTakeback = banner === "Tournament" ? false : true;
 
-    board.removeAllListeners();
+    dgtBoard.removeAllListeners();
 
     const whiteTotalTime = 60 * 1000 * 60;
     const blackTotalTime = 60 * 1000 * 60;
 
-    const gameInst = await startChess(game, board, {
+    const gameInst = await startChess(game, dgtBoard, {
       allowTakeback,
       blackInfo: {
         firstName: persona.firstName,
@@ -560,7 +564,7 @@ async function start() {
     localStorage.setItem(`${persona.name}-game-type`, gameType);
 
     onChanged({ wantRaw: utils.fenToRaw(game._startFen) });
-    board.on("changed", clearIllegalForBoardChanged);
+    dgtBoard.on("changed", clearIllegalForBoardChanged);
     updateClockDisplay("black", blackTotalTime);
     updateClockDisplay("white", whiteTotalTime);
     setTimeout(updatePlayerClock, 100);
