@@ -353,51 +353,57 @@ async function start() {
       wait !== "NoQueue" &&
       (audioPlaying || (audioPlayQueue.length > 0 && wait !== "dequeued"))
     ) {
-      console.log("queueing audio", folder, force, wait, triggerProb);
+      // console.log("queueing audio", folder, force, wait, triggerProb);
       return wait && audioPlayQueue.push([sounds, folder, force, "dequeued", triggerProb]);
     }
-    const scaler = 100;
-    const shouldPlay = Math.random() * 100 * scaler;
-    const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
-    const high = low + triggerProb * scaler;
-    console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
-    if (force || (shouldPlay >= low && shouldPlay < high)) {
-      let name;
-      if (typeof force === "string") {
-        name = force;
-      } else if (Array.isArray(force)) {
-        name = force.shift();
-      } else {
-        const keys = Object.keys(sounds);
-        const ix = Math.floor(Math.random() * keys.length);
-        name = keys[ix];
+
+    if (!force) {
+      const scaler = 100;
+      const shouldPlay = Math.random() * 100 * scaler;
+      const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
+      const high = low + triggerProb * scaler;
+      // console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
+      if (shouldPlay < low || shouldPlay > high) {
+        return;
       }
-      const sound = sounds[name];
-      const folder2 = !folder.startsWith("sound/") ? `${folder}/audio` : folder;
-      const audio = new Audio(`assets/${folder2}/${sound}`);
-      audioPlaying = true;
-      audio.play();
-      let called = false;
-      const ended = () => {
-        console.log("playing audio ended");
-        if (called) return;
-        called = true;
-        audioPlaying = false;
-        if (Array.isArray(force) && force.length > 0) {
-          console.log("next audio", force);
-          playAudio(sounds, folder, force, "NoQueue", triggerProb);
-        } else if (audioPlayQueue.length > 0) {
-          console.log("dequeue audio");
-          playAudio(...audioPlayQueue.shift());
-        } else {
-          console.log("no more audio");
-        }
-      };
-      audio.onended = ended;
-      audio.onabort = ended;
-      audio.oncancel = ended;
-      audio.onerror = ended;
     }
+
+    let name;
+    if (typeof force === "string") {
+      name = force;
+    } else if (Array.isArray(force)) {
+      name = force.shift();
+    } else {
+      const keys = Object.keys(sounds);
+      const ix = Math.floor(Math.random() * keys.length);
+      name = keys[ix];
+    }
+    const sound = sounds[name];
+    const folder2 = !folder.startsWith("sound/") ? `${folder}/audio` : folder;
+    const audio = new Audio(`assets/${folder2}/${sound}`);
+    audioPlaying = true;
+    audio.play();
+    let called = false;
+    const ended = () => {
+      // console.log("playing audio ended");
+      if (called) return;
+      called = true;
+      audioPlaying = false;
+      if (Array.isArray(force) && force.length > 0) {
+        // console.log("next audio", force);
+        playAudio(sounds, folder, force, "NoQueue", triggerProb);
+      } else if (audioPlayQueue.length > 0) {
+        // console.log("dequeue audio");
+        playAudio(...audioPlayQueue.shift());
+      } else {
+        // console.log("no more audio");
+      }
+    };
+
+    audio.onended = ended;
+    audio.onabort = ended;
+    audio.oncancel = ended;
+    audio.onerror = ended;
   };
 
   const clearIllegalForBoardChanged = () => {
