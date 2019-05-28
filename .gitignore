@@ -2,3 +2,4 @@ node_modules
 *.exe
 .dev-tool
 Engines
+chesstron-win32-x64

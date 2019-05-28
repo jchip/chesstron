@@ -11,6 +11,9 @@ const { ipcRenderer, clipboard } = require("electron");
 const personas = require("./lib/personas");
 const DB = require("./lib/db");
 const destructSan = require("./destruct-san");
+const EnginesManager = require("./lib/engine-mgr");
+const UserPlayer = require("dgt-board/lib/user-player");
+const EnginePlayer = require("dgt-board/lib/engine-player");
 
 const pieceLetterMap = {
   p: "pawn",
@@ -283,6 +286,61 @@ function showGame() {
 }
 
 const MOVE_SOUNDS = require("./sounds2.json");
+const ENGINES_MGR = new EnginesManager();
+
+class RandMinTimeEngine extends EnginePlayer {
+  constructor(options) {
+    super(options);
+    this._allowTakeback = Boolean(options.allowTakeback);
+  }
+
+  get minTime() {
+    return Math.random() * 5000 + 100 + Math.random() * 5000;
+  }
+
+  allowTakeback() {
+    return this._allowTakeback;
+  }
+}
+
+async function initPersonaPlayer({ color, persona, totalTime, allowTakeback, game, board }) {
+  let engine = [];
+  if (!persona.strategy) {
+    const defaultEngines = ["irina", "stockfish", "komodo", "amyan"];
+    for (const name of defaultEngines) {
+      engine.push(await ENGINES_MGR.initEngine({ name }));
+    }
+  } else {
+    for (const id of persona.strategy.default) {
+      const spec = persona.engines[id];
+      const eng = await ENGINES_MGR.initEngine(spec);
+      engine.push({
+        name: id,
+        async position(...args) {
+          return eng.position(...args);
+        },
+        async go() {
+          return spec.move(eng);
+        }
+      });
+    }
+  }
+
+  return new RandMinTimeEngine({
+    allowTakeback,
+    playerInfo: {
+      firstName: persona.firstName,
+      lastName: persona.lastName,
+      rating: "???",
+      totalTime
+    },
+
+    color,
+    game,
+    board,
+    engine
+  });
+}
 
 async function start() {
   const savePersonaName = localStorage.getItem("persona") || "mickey";
@@ -530,6 +588,29 @@ async function start() {
 
     const whiteTotalTime = 60 * 1000 * 60;
     const blackTotalTime = 60 * 1000 * 60;
+    const whiteInfo = Object.assign(
+      {
+        totalTime: whiteTotalTime
+      },
+      profile
+    );
+
+    const initPlayer = async color => {
+      if (color === "black") {
+        return await initPersonaPlayer({
+          color,
+          persona,
+          totalTime: blackTotalTime,
+          game,
+          board: dgtBoard,
+          allowTakeback
+        });
+      } else {
+        return new UserPlayer(
+          Object.assign({ playerInfo: whiteInfo }, { color, game, board: dgtBoard })
+        );
+      }
+    };
 
     const gameInst = await startChess(game, dgtBoard, {
       allowTakeback,
@@ -539,14 +620,10 @@ async function start() {
         rating: "???",
         totalTime: blackTotalTime
       },
-      whiteInfo: Object.assign(
-        {
-          totalTime: whiteTotalTime
-        },
-        profile
-      ),
+      whiteInfo,
       startFen: gameSaver.getInitFen(),
-      moves: gameSaver.getMoves()
+      moves: gameSaver.getMoves(),
+      initPlayer
     });
 
     if (!game) {
