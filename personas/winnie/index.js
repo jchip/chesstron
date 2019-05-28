@@ -26,7 +26,7 @@ const makePvMove = async (engine, id) => {
       let picked;
       let pv;
 
-      const scores = sortedPv.slice(0, 10).map(x => x.score.value);
+      let scores = [];
       const firstPv = sortedPv[0];
       const firstMove = firstPv.pv.split(" ")[0];
       const nextPv = sortedPv.find(x => x.pv.split(" ")[0] !== firstMove);
@@ -46,6 +46,7 @@ const makePvMove = async (engine, id) => {
         pv = sortedPv[picked] || sortedPv[0];
         result._bestmove = result.bestmove;
         result.bestmove = pv.pv.split(" ")[0];
+        scores = sortedPv.slice(0, 10).map(x => x.score.value);
       }
 
       console.log(
