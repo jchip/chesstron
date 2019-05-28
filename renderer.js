@@ -426,12 +426,7 @@ async function start() {
     }
 
     if (!force) {
-      const scaler = 100;
-      const shouldPlay = Math.random() * 100 * scaler;
-      const low = Math.floor((scaler * (100 - (triggerProb || 0))) / 2);
-      const high = low + triggerProb * scaler;
-      // console.log("play audio", force, wait, triggerProb, low, shouldPlay, high);
-      if (shouldPlay < low || shouldPlay > high) {
+      if (Math.random() * 100 >= triggerProb) {
         return;
       }
     }
