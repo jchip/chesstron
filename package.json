@@ -16,7 +16,7 @@
   "author": "Joel Chen",
   "license": "unlicensed",
   "devDependencies": {
-    "electron": "^4.1.1",
+    "electron": "^7.0.0",
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
