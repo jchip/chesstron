@@ -15,8 +15,12 @@
   ],
   "author": "Joel Chen",
   "license": "unlicensed",
+  "prettier": {
+    "printWidth": 100
+  },
   "devDependencies": {
     "electron": "^7.0.0",
+    "electron-packager": "^14.1.1",
     "electron-rebuild": "^1.8.4"
   },
   "dependencies": {
