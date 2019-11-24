@@ -33,7 +33,7 @@ const makePvMove = async (engine, id) => {
         picked = 0;
         pv = firstPv;
       } else {
-        picked = util.pickChance([8, 17, 16, 19, 12, 8, 7, 6, 5, 2]);
+        picked = util.pickChance([4, 7, 10, 15, 14, 14, 15, 8, 7, 6]);
         if (picked < 0 || picked > sortedPv.length) {
           const chances = [];
           for (let i = 0; i < sortedPv.length; i++) {
@@ -78,10 +78,6 @@ const makeBestMove = async (engine, id, depth) => {
 };
 
 const engines = {
-  stockfish1: {
-    name: "stockfish",
-    move: async engine => makeBestMove(engine, "stockfish1")
-  },
   stockfish: {
     name: "stockfish",
     initOptions: {
@@ -89,24 +85,12 @@ const engines = {
     },
     move: async engine => makePvMove(engine, "stockfish")
   },
-  irina: {
-    name: "irina",
-    move: async engine => makeBestMove(engine, "irina", 1)
-  },
-  komodo1: {
-    name: "komodo",
-    move: async engine => makeBestMove(engine, "komodo1")
-  },
   komodo: {
     name: "komodo",
     initOptions: {
       MultiPV: 10
     },
     move: async engine => makePvMove(engine, "komodo")
-  },
-  amyan: {
-    name: "amyan",
-    move: async engine => makeBestMove(engine, "amyan", 1)
   }
 };
 
@@ -153,6 +137,6 @@ module.exports = {
   engines,
 
   strategy: {
-    default: ["stockfish1", "stockfish", "amyan", "stockfish"]
+    default: ["stockfish", "komodo"]
   }
 };
