@@ -483,9 +483,23 @@ async function start() {
       return wait && audioPlayQueue.push([sounds, folder, force, "dequeued", triggerProb]);
     }
 
+    const ended = _.once(() => {
+      console.log("playing audio ended");
+      audioPlaying = false;
+      if (Array.isArray(force) && force.length > 0) {
+        console.log("next audio", force);
+        playAudio(sounds, folder, force, "NoQueue", triggerProb);
+      } else if (audioPlayQueue.length > 0) {
+        console.log("dequeue audio");
+        playAudio(...audioPlayQueue.shift());
+      } else {
+        console.log("no more audio");
+      }
+    });
+
     if (!force) {
       if (Math.random() * 100 >= triggerProb) {
-        return;
+        return setTimeout(ended, 0);
       }
     }
 
@@ -504,19 +518,6 @@ async function start() {
     const audio = new Audio(`assets/${folder2}/${sound}`);
     audioPlaying = true;
     audio.play();
-    const ended = _.once(() => {
-      // console.log("playing audio ended");
-      audioPlaying = false;
-      if (Array.isArray(force) && force.length > 0) {
-        // console.log("next audio", force);
-        playAudio(sounds, folder, force, "NoQueue", triggerProb);
-      } else if (audioPlayQueue.length > 0) {
-        // console.log("dequeue audio");
-        playAudio(...audioPlayQueue.shift());
-      } else {
-        // console.log("no more audio");
-      }
-    });
 
     audio.onended = ended;
     audio.onabort = ended;
