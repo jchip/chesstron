@@ -3,8 +3,8 @@
 const _ = require("lodash");
 const util = require("../../lib/util");
 
-const makePvMove = async (engine, id) => {
-  const depth = util.pickChance([15, 20, 30, 30], [10, 6, 4, 2]);
+const makePvMove = async (engine, id, inDepth) => {
+  const depth = inDepth || util.pickChance([10, 10, 10, 10, 10, 20, 30], [11, 10, 9, 8, 7, 6, 5]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
@@ -13,7 +13,7 @@ const makePvMove = async (engine, id) => {
   if (result.info.length > 1) {
     const sortedPv = result.info
       // avoid moves that puts tigger in significant disadvantage if possible
-      .filter(x => x.pv && x.score && x.score.value > -80)
+      // .filter(x => x.pv && x.score && x.score.value > -80)
       .sort((a, b) => {
         return b.score.value - a.score.value;
       });
@@ -33,7 +33,7 @@ const makePvMove = async (engine, id) => {
         picked = 0;
         pv = firstPv;
       } else {
-        picked = util.pickChance([4, 7, 10, 15, 14, 14, 15, 8, 7, 6]);
+        picked = util.pickChance([5, 7, 10, 12, 16, 14, 12, 10, 8, 6]);
         if (picked < 0 || picked > sortedPv.length) {
           const chances = [];
           for (let i = 0; i < sortedPv.length; i++) {
@@ -59,6 +59,8 @@ const makePvMove = async (engine, id) => {
         "scores",
         scores
       );
+    } else {
+      console.log(id, "no multi pv to try after sorted, using best move", result.bestmove);
     }
   } else {
     console.log(id, "no viable pv to try, using bestmove", result.bestmove);
@@ -137,6 +139,6 @@ module.exports = {
   engines,
 
   strategy: {
-    default: ["stockfish", "komodo"]
+    default: ["stockfish"]
   }
 };
