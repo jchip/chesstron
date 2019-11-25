@@ -4,7 +4,8 @@ const _ = require("lodash");
 const util = require("../../lib/util");
 
 const makePvMove = async (engine, id, inDepth) => {
-  const depth = inDepth || util.pickChance([4, 5, 7, 8, 9, 10, 57], [7, 6, 5, 4, 3, 2, 1]);
+  // const depth = inDepth || util.pickChance([4, 5, 7, 8, 9, 10, 57], [7, 6, 5, 4, 3, 2, 1]);
+  const depth = inDepth || util.pickChance([5, 6, 7, 8, 9, 10, 55], [8, 7, 6, 5, 4, 3, 2]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
@@ -28,12 +29,13 @@ const makePvMove = async (engine, id, inDepth) => {
       const firstPv = sortedPv[0];
       const firstMove = firstPv.pv.split(" ")[0];
       const nextPv = sortedPv.find(x => x.pv.split(" ")[0] !== firstMove);
-      // opponent most likely made a big blunder, take obvious move
-      if (nextPv && firstPv.score.value - nextPv.score.value > 100) {
+      // even our best move is below 0, take best move
+      // or opponent most likely made a big blunder, take obvious move
+      if (firstPv.score.value < 0 || (nextPv && firstPv.score.value - nextPv.score.value > 100)) {
         picked = 0;
         pv = firstPv;
       } else {
-        picked = util.pickChance([3, 5, 7, 8, 8, 8, 10, 11, 15, 25]);
+        picked = util.pickChance([3, 5, 7, 7, 8, 9, 10, 11, 15, 25]);
         if (picked < 0 || picked > sortedPv.length) {
           const chances = [];
           for (let i = 0; i < sortedPv.length; i++) {
