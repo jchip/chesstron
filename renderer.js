@@ -319,8 +319,8 @@ async function initPersonaPlayer({ color, persona, totalTime, allowTakeback, gam
         async position(...args) {
           return eng.position(...args);
         },
-        async go() {
-          return spec.move(eng);
+        async go(engOpts, game) {
+          return spec.move(eng, engOpts, game);
         }
       });
     }
