@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "prepare": "electron-rebuild",
-    "win32": "electron-packager . --platform=win32"
+    "win32": "electron-packager . --platform=win32 --ignore=Engines"
   },
   "repository": "https://github.com/jchip/chesstron.git",
   "keywords": [
