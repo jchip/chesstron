@@ -5,7 +5,7 @@ const util = require("../../lib/util");
 
 const makePvMove = async ({ engine, id, inDepth, game }) => {
   // const depth = inDepth || util.pickChance([4, 5, 7, 8, 9, 10, 57], [7, 6, 5, 4, 3, 2, 1]);
-  const depth = inDepth || util.pickChance([5, 6, 7, 8, 9, 10, 55], [4, 4, 3, 3, 3, 2, 2]);
+  const depth = inDepth || util.pickChance([1, 1, 4, 4, 20, 20, 55], [4, 4, 3, 3, 2, 2, 1]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
@@ -14,7 +14,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
   if (result.info.length > 1) {
     const sortedPv = result.info
       // avoid moves that puts eeyore in significant disadvantage if possible
-      .filter(x => x.pv && x.score && x.score.value > -250)
+      .filter(x => x.pv && x.score && x.score.value > -300)
       .sort((a, b) => {
         return b.score.value - a.score.value;
       });
@@ -38,34 +38,8 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         picked = 0;
         pickedMove = firstPv;
       } else {
-        let playChances = [
-          1,
-          1,
-          1,
-          2,
-          2,
-          2,
-          3,
-          3,
-          3,
-          4,
-          4,
-          4,
-          5,
-          5,
-          6,
-          6,
-          7,
-          7,
-          8,
-          8,
-          9,
-          9,
-          10,
-          10,
-          15,
-          25
-        ];
+        const b = [2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 10, 10, 15, 25];
+        let playChances = [1, 1, 1, 1, 1, 1].concat(b);
         if (sortedPv.length < playChances.length) {
           const extraChances = playChances.slice(sortedPv.length).reverse();
           playChances = playChances.slice(0, sortedPv.length);
