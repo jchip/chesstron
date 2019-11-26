@@ -104,7 +104,7 @@ function switchPersona(personaName) {
 }
 
 function showWelcome(activeName) {
-  const activePer = activeName ? personas.get(activeName) : null;
+  const activePer = activeName ? personas.get(activeName) : personas.current();
   const htmls = personas.allIds().map((id, ix) => {
     const per = personas.get(id);
     const active = (activePer ? per.name === activePer.name : ix === 0) ? " active" : "";
