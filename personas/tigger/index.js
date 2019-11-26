@@ -8,10 +8,11 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
-    MultiPV: 6
+    MultiPV: 10
   });
   if (result.info.length > 1) {
-    const sortedPv = result.info
+    const sortedPv = util
+      .simplifyPv(result.info)
       // avoid moves that puts tigger in significant disadvantage if possible
       .filter(x => x.pv && x.score && x.score.value > -250)
       .sort((a, b) => {
@@ -25,19 +26,23 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
       let pickedMove;
 
       const firstPv = sortedPv[0];
-      const firstMove = firstPv.pv.split(" ")[0];
-      const nextPv = sortedPv.find(x => x.pv.split(" ")[0] !== firstMove);
-      const firstDiff = nextPv && firstPv.score.value - nextPv.score.value;
+      const firstDiff = firstPv.score.value - sortedPv[1].score.value;
+      // TODO: fix resume game lost history
       const moves = game ? game._chess.history().length : Infinity;
       // if our best move score is below 5, take best move
-      // or if first and second pv move has a diff bigger than 200, then
-      // opponent most likely made a big blunder, take obvious move
+      // or if first and second pv move has a diff bigger than 180, then
+      // opponent most likely made a big blunder, take obvious move 95% of the time
       // or if in first 6 moves and best move score is below 150, take best move
-      if (firstPv.score.value < 5 || firstDiff > 180 || (firstPv.score.value < 150 && moves <= 8)) {
+      if (
+        firstPv.score.value < 5 ||
+        (firstDiff > 180 && util.roll(95)) ||
+        (firstPv.score.value < 150 && moves <= 6)
+      ) {
+        console.log("picking first pv move");
         picked = 0;
         pickedMove = firstPv;
       } else {
-        let playChances = [2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 15, 20];
+        let playChances = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 15, 25];
         if (sortedPv.length < playChances.length) {
           const extraChances = playChances.slice(sortedPv.length).reverse();
           playChances = playChances.slice(0, sortedPv.length);
@@ -62,7 +67,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
 
       console.log(
         id,
-        "make pv move",
+        "make pv picked",
         picked,
         "score",
         pickedMove.score.value,
