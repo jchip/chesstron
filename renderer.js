@@ -138,9 +138,12 @@ class GameSaver {
   }
 
   updateMove(move) {
-    const moves = localStorage[this._moveKey].split(" ").filter(x => x);
-    moves.push(move);
-    localStorage.setItem(this._moveKey, moves.join(" "));
+    const moves = localStorage[this._moveKey];
+    if (moves) {
+      const movesArr = moves.split(" ").filter(x => x);
+      movesArr.push(move);
+      localStorage.setItem(this._moveKey, movesArr.join(" "));
+    }
   }
 
   getInitFen() {
