@@ -3,17 +3,17 @@
 const _ = require("lodash");
 const util = require("../../lib/util");
 
-const makePvMove = async (engine, id, inDepth) => {
-  const depth = inDepth || util.pickChance([10, 10, 10, 10, 10, 20, 30], [11, 10, 9, 8, 7, 6, 5]);
+const makePvMove = async ({ engine, id, inDepth, game }) => {
+  const depth = inDepth || util.pickChance([5, 7, 8, 20, 30, 35], [7, 6, 5, 4, 3, 2]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
-    MultiPV: 10
+    MultiPV: 6
   });
   if (result.info.length > 1) {
     const sortedPv = result.info
       // avoid moves that puts tigger in significant disadvantage if possible
-      // .filter(x => x.pv && x.score && x.score.value > -80)
+      .filter(x => x.pv && x.score && x.score.value > -250)
       .sort((a, b) => {
         return b.score.value - a.score.value;
       });
@@ -22,29 +22,42 @@ const makePvMove = async (engine, id, inDepth) => {
 
     if (sortedPv.length > 1) {
       let picked;
-      let pv;
+      let pickedMove;
 
-      let scores = [];
       const firstPv = sortedPv[0];
       const firstMove = firstPv.pv.split(" ")[0];
       const nextPv = sortedPv.find(x => x.pv.split(" ")[0] !== firstMove);
+      const firstDiff = nextPv && firstPv.score.value - nextPv.score.value;
+      const moves = game ? game._chess.history().length : Infinity;
+      // if our best move score is below 5, take best move
+      // or if first and second pv move has a diff bigger than 200, then
       // opponent most likely made a big blunder, take obvious move
-      if (nextPv && firstPv.score.value - nextPv.score.value > 100) {
+      // or if in first 6 moves and best move score is below 150, take best move
+      if (firstPv.score.value < 5 || firstDiff > 180 || (firstPv.score.value < 150 && moves <= 8)) {
         picked = 0;
-        pv = firstPv;
+        pickedMove = firstPv;
       } else {
-        picked = util.pickChance([5, 7, 10, 12, 16, 14, 12, 10, 8, 6]);
-        if (picked < 0 || picked > sortedPv.length) {
-          const chances = [];
-          for (let i = 0; i < sortedPv.length; i++) {
-            chances.push(100 / sortedPv.length);
-          }
-          picked = util.pickChance(chances);
+        let playChances = [2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 15, 20];
+        if (sortedPv.length < playChances.length) {
+          const extraChances = playChances.slice(sortedPv.length).reverse();
+          playChances = playChances.slice(0, sortedPv.length);
+          extraChances.forEach((n, ix) => {
+            const k = playChances.length - ix - 1;
+            if (k >= 0) playChances[k] += n;
+          });
         }
-        pv = sortedPv[picked] || sortedPv[0];
+        console.log("playChances", playChances);
+        picked = util.pickChance(playChances);
+        // if (picked < 0 || picked > sortedPv.length) {
+        //   const chances = playChances;
+        //   for (let i = 0; i < sortedPv.length; i++) {
+        //     chances.push(100 / sortedPv.length);
+        //   }
+        //   picked = util.pickChance(chances);
+        // }
+        pickedMove = sortedPv[picked] || sortedPv[0];
         result._bestmove = result.bestmove;
-        result.bestmove = pv.pv.split(" ")[0];
-        scores = sortedPv.slice(0, 10).map(x => x.score.value);
+        result.bestmove = pickedMove.pv.split(" ")[0];
       }
 
       console.log(
@@ -52,12 +65,14 @@ const makePvMove = async (engine, id, inDepth) => {
         "make pv move",
         picked,
         "score",
-        pv.score.value,
+        pickedMove.score.value,
         result.bestmove,
         "depth",
         depth,
         "scores",
-        scores
+        sortedPv.slice(0, 25).map(x => x.score.value),
+        "firstDiff",
+        firstDiff
       );
     } else {
       console.log(id, "no multi pv to try after sorted, using best move", result.bestmove);
@@ -85,14 +100,14 @@ const engines = {
     initOptions: {
       MultiPV: 10
     },
-    move: async engine => makePvMove(engine, "stockfish")
+    move: async (engine, engOpts, game) => makePvMove({ engine, id: "stockfish", engOpts, game })
   },
   komodo: {
     name: "komodo",
     initOptions: {
       MultiPV: 10
     },
-    move: async engine => makePvMove(engine, "komodo")
+    move: async (engine, engOpts, game) => makePvMove({ engine, id: "komodo", engOpts, game })
   }
 };
 
