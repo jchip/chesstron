@@ -139,7 +139,7 @@ class GameSaver {
 
   updateMove(move) {
     const moves = localStorage[this._moveKey];
-    if (moves) {
+    if (typeof moves === "string") {
       const movesArr = moves.split(" ").filter(x => x);
       movesArr.push(move);
       localStorage.setItem(this._moveKey, movesArr.join(" "));
