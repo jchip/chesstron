@@ -12,21 +12,34 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
     MultiPV: 10
   });
   if (result.info.length > 1) {
-    const sortedPv = util
+    const cmpScore = (a, b) => b.score.value - a.score.value;
+    let sortedPv = util
       .simplifyPv(result.info)
       // avoid moves that puts eeyore in significant disadvantage if possible
       .filter(x => x.pv && x.score && x.score.value > -300)
-      .sort((a, b) => {
-        return b.score.value - a.score.value;
-      });
+      .sort(cmpScore);
 
     console.log(id, "moves", result.info, "sorted", sortedPv);
 
     if (sortedPv.length > 1) {
       let picked;
       let pickedMove;
-
       const firstPv = sortedPv[0];
+
+      if (sortedPv.find(x => x.score.unit === "mate")) {
+        sortedPv = sortedPv
+          .map(x => {
+            if (x.score.unit === "mate") {
+              x.score = Object.assign({}, x, {
+                mate: x.score.value,
+                value: firstPv.score.value + x.score.value
+              });
+            }
+            return x;
+          })
+          .sort(cmpScore);
+      }
+
       const firstDiff = firstPv.score.value - sortedPv[1].score.value;
       const moves = game ? game._chess.history().length : Infinity;
       // if our best move score is below 5, take best move
