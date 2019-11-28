@@ -40,16 +40,23 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
           .sort(cmpScore);
       }
 
-      const firstDiff = firstPv.score.value - sortedPv[1].score.value;
+      const scores = sortedPv.slice(0, 25).map(x => x.score.value);
       const moves = game ? game._chess.history().length : Infinity;
+      console.log("history moves", moves);
       // if our best move score is below 5, take best move
       // or if first and second pv move has a diff bigger than 200, then
       // opponent most likely made a big blunder, take obvious move
       // or if in first 6 moves and best move score is below 150, take best move
       if (
         firstPv.score.value < 5 ||
-        (firstDiff > 200 && util.roll(85)) ||
-        (firstPv.score.value < 150 && moves <= 6)
+        util.firstDiffCheck({ scores, threshold: 200, chance: 85 }) ||
+        (firstPv.score.value < 150 && moves <= 6) ||
+        util.stdDevDiffCheck({
+          scores,
+          count: Math.floor(scores.length / 2) + 1,
+          threshold: 145,
+          chance: 90
+        })
       ) {
         console.log("picking first pv move");
         picked = 0;
@@ -89,9 +96,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         "depth",
         depth,
         "scores",
-        sortedPv.slice(0, 25).map(x => x.score.value),
-        "firstDiff",
-        firstDiff
+        scores
       );
     } else {
       console.log(id, "no multi pv to try after sorted, using best move", result.bestmove);
