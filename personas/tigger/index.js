@@ -18,7 +18,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
       .filter(x => x.pv && x.score && x.score.value > -250)
       .sort(cmpScore);
 
-    console.log(id, "moves", result.info, "sorted", sortedPv);
+    console.log(id, "bestmove", result.bestmove, "pv moves", result.info, "sorted", sortedPv);
 
     if (sortedPv.length > 1) {
       let picked;
