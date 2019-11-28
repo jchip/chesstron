@@ -229,7 +229,18 @@ function copyPGN(ix) {
   }
   LAST_COPY_MOVES_BUTTON = el;
   el.innerText = "Copy PGN \u2713";
-  clipboard.writeText(moves);
+  const dropUndo = moves.split(" ").reduce((a, m) => {
+    if (m.startsWith("undo")) {
+      const n = parseInt(m.split("_")[1]);
+      for (let i = 0; i < n; i++) {
+        a.pop();
+      }
+    } else {
+      a.push(m);
+    }
+    return a;
+  }, []);
+  clipboard.writeText(dropUndo.join(" "));
 }
 
 async function showGameList(db) {
