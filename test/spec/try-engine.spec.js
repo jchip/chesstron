@@ -25,6 +25,7 @@ describe("stockfish", function() {
   after(async () => {
     await engines.b.engine.quit();
     await engines.w.engine.quit();
+    engines = {};
   });
 
   this.beforeEach(() => {
@@ -51,7 +52,7 @@ describe("stockfish", function() {
     if (play.in_draw()) {
       return { result: "draw" };
     } else if (play.in_stalemate()) {
-      return { result: stalemate };
+      return { result: "stalemate" };
     } else if (play.in_threefold_repetition()) {
       return { result: "threefold repetition" };
     } else if (play.in_checkmate()) {
