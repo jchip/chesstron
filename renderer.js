@@ -498,16 +498,16 @@ async function start() {
     }
 
     const ended = _.once(() => {
-      console.log("playing audio ended");
+      // console.log("playing audio ended");
       audioPlaying = false;
       if (Array.isArray(force) && force.length > 0) {
-        console.log("next audio", force);
+        // console.log("next audio", force);
         playAudio(sounds, folder, force, "NoQueue", triggerProb);
       } else if (audioPlayQueue.length > 0) {
-        console.log("dequeue audio");
+        // console.log("dequeue audio");
         playAudio(...audioPlayQueue.shift());
       } else {
-        console.log("no more audio");
+        // console.log("no more audio");
       }
     });
 
