@@ -38,7 +38,9 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
           .sort(cmpScore);
       }
 
-      const scores = util.balanceScores({ scores: sortedPv.slice(0, 25).map(x => x.score.value) });
+      let scores = sortedPv.slice(0, 25).map(x => x.score.value);
+      scores = util.limitScoresByStdDev({ scores, limit: 150, chance: 90 });
+      scores = util.balanceScores({ scores });
       const moves = game ? game._chess.history().length : Infinity;
       console.log("depth", depth, "scores", scores, "history moves", moves);
       // if our best move score is below 5, take best move

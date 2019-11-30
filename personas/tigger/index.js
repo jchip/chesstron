@@ -4,7 +4,7 @@ const _ = require("lodash");
 const util = require("../../lib/util");
 
 const makePvMove = async ({ engine, id, inDepth, game }) => {
-  const depth = inDepth || util.pickChance([2, 4, 8, 86], [8, 6, 5, 4]);
+  const depth = inDepth || util.pickChance([4, 6, 10, 80], [8, 7, 6, 5]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
@@ -37,8 +37,11 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
           .sort(cmpScore);
       }
 
-      const scores = util.balanceScores({ scores: sortedPv.slice(0, 25).map(x => x.score.value) });
+      let scores = sortedPv.slice(0, 25).map(x => x.score.value);
+      scores = util.limitScoresByStdDev({ scores, limit: 100, chance: 90 });
+      scores = util.balanceScores({ scores });
       const moves = game ? game._chess.history().length : Infinity;
+
       console.log("depth", depth, "scores", scores, "history moves", moves);
       // if our best move score is below 5, take best move
       // or if first and second pv move has a diff bigger than 200, then
