@@ -30,10 +30,8 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         sortedPv = sortedPv
           .map(x => {
             if (x.score.unit === "mate") {
-              x.score = Object.assign({}, x, {
-                mate: x.score.value,
-                value: firstScore + x.score.value
-              });
+              const value = firstScore + x.score.value;
+              x.score = Object.assign({}, x, { mate: x.score.value, value });
             }
             return x;
           })
@@ -51,13 +49,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         scores.length <= 1 ||
         scores[0] < 5 ||
         util.firstDiffCheck({ scores, threshold: 200, chance: 85 }) ||
-        (scores[0] < 150 && moves <= 6) ||
-        util.stdDevDiffCheck({
-          scores,
-          count: Math.floor(scores.length / 2) + 1,
-          threshold: 145,
-          chance: 90
-        })
+        (scores[0] < 150 && moves <= 6)
       ) {
         picked = 0;
         pickedMove = sortedPv[0];
