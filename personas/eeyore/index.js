@@ -65,9 +65,9 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
       } else {
         const b = [2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 10, 10, 15, 25];
         let playChances = [1, 1, 1, 1, 1, 1].concat(b);
-        if (sortedPv.length < playChances.length) {
-          const extraChances = playChances.slice(sortedPv.length).reverse();
-          playChances = playChances.slice(0, sortedPv.length);
+        if (scores.length < playChances.length) {
+          const extraChances = playChances.slice(scores.length).reverse();
+          playChances = playChances.slice(0, scores.length);
           extraChances.forEach((n, ix) => {
             const k = playChances.length - ix - 1;
             if (k >= 0) playChances[k] += n;
