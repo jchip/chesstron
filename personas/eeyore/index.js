@@ -24,15 +24,15 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
     if (sortedPv.length > 1) {
       let picked;
       let pickedMove;
-      const firstPv = sortedPv[0];
 
       if (sortedPv.find(x => x.score.unit === "mate")) {
+        const firstScore = sortedPv[0].score.value;
         sortedPv = sortedPv
           .map(x => {
             if (x.score.unit === "mate") {
               x.score = Object.assign({}, x, {
                 mate: x.score.value,
-                value: firstPv.score.value + x.score.value
+                value: firstScore + x.score.value
               });
             }
             return x;
@@ -40,17 +40,18 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
           .sort(cmpScore);
       }
 
-      const scores = sortedPv.slice(0, 25).map(x => x.score.value);
+      const scores = util.balanceScores({ scores: sortedPv.slice(0, 25).map(x => x.score.value) });
       const moves = game ? game._chess.history().length : Infinity;
-      console.log("history moves", moves);
+      console.log("depth", depth, "scores", scores, "history moves", moves);
       // if our best move score is below 5, take best move
       // or if first and second pv move has a diff bigger than 200, then
       // opponent most likely made a big blunder, take obvious move
       // or if in first 6 moves and best move score is below 150, take best move
       if (
-        firstPv.score.value < 5 ||
+        scores.length <= 1 ||
+        scores[0] < 5 ||
         util.firstDiffCheck({ scores, threshold: 200, chance: 85 }) ||
-        (firstPv.score.value < 150 && moves <= 6) ||
+        (scores[0] < 150 && moves <= 6) ||
         util.stdDevDiffCheck({
           scores,
           count: Math.floor(scores.length / 2) + 1,
@@ -58,9 +59,9 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
           chance: 90
         })
       ) {
-        console.log("picking first pv move");
         picked = 0;
-        pickedMove = firstPv;
+        pickedMove = sortedPv[0];
+        console.log("picking first pv move", pickedMove, "bestmove", result.bestmove);
       } else {
         const b = [2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 10, 10, 15, 25];
         let playChances = [1, 1, 1, 1, 1, 1].concat(b);
@@ -82,22 +83,12 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         //   picked = util.pickChance(chances);
         // }
         pickedMove = sortedPv[picked] || sortedPv[0];
-        result._bestmove = result.bestmove;
-        result.bestmove = pickedMove.pv.split(" ")[0];
       }
 
-      console.log(
-        id,
-        "make pv picked",
-        picked,
-        "score",
-        pickedMove.score.value,
-        result.bestmove,
-        "depth",
-        depth,
-        "scores",
-        scores
-      );
+      result._bestmove = result.bestmove;
+      result.bestmove = pickedMove.san;
+
+      console.log(id, "make pv picked", picked, "score", pickedMove.score.value, result.bestmove);
     } else {
       console.log(id, "no multi pv to try after sorted, using best move", result.bestmove);
     }
