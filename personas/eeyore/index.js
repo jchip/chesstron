@@ -14,7 +14,7 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
   if (result.info.length > 1) {
     const cmpScore = (a, b) => b.score.value - a.score.value;
     let sortedPv = util
-      .simplifyPv(result.info)
+      .simplifyPv(result.info, depth)
       // avoid moves that puts eeyore in significant disadvantage if possible
       .filter(x => x.pv && x.score && x.score.value > -300)
       .sort(cmpScore);
