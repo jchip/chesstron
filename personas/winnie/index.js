@@ -3,64 +3,82 @@
 const _ = require("lodash");
 const util = require("../../lib/util");
 
-const makePvMove = async (engine, id) => {
-  const depth = util.pickChance([15, 20, 30, 30], [10, 6, 4, 2]);
+const makePvMove = async ({ engine, id, inDepth, game }) => {
+  const depth = inDepth || util.pickChance([4, 6, 10, 80], [11, 10, 9, 7]);
   console.log(id, "about to make multi pv move, depth", depth);
   const result = await engine.go({
     depth,
     MultiPV: 10
   });
   if (result.info.length > 1) {
-    const sortedPv = result.info
-      // avoid moves that puts winnie in significant disadvantage if possible
-      .filter(x => x.pv && x.score && x.score.value > -50)
-      .sort((a, b) => {
-        if (b.depth === a.depth) {
-          return b.score.value - a.score.value;
-        }
+    const cmpScore = (a, b) => b.score.value - a.score.value;
+    let sortedPv = util
+      .simplifyPv(result.info, depth)
+      // avoid moves that puts tigger in significant disadvantage if possible
+      .filter(x => x.pv && x.score && x.score.value > -200)
+      .sort(cmpScore);
 
-        return b.depth - a.depth;
-      });
+    console.log(id, "result", result, "sorted", sortedPv);
 
     if (sortedPv.length > 1) {
       let picked;
-      let pv;
+      let pickedMove;
 
-      let scores = [];
-      const firstPv = sortedPv[0];
-      const firstMove = firstPv.pv.split(" ")[0];
-      const nextPv = sortedPv.find(x => x.pv.split(" ")[0] !== firstMove);
-      // opponent most likely made a big blunder, take obvious move
-      if (nextPv && firstPv.score.value - nextPv.score.value > 120) {
-        picked = 0;
-        pv = firstPv;
-      } else {
-        picked = util.pickChance([10, 25, 20, 15, 10, 6, 5, 4, 3, 2]);
-        if (picked < 0 || picked > sortedPv.length) {
-          const chances = [];
-          for (let i = 0; i < sortedPv.length; i++) {
-            chances.push(100 / sortedPv.length);
-          }
-          picked = util.pickChance(chances);
-        }
-        pv = sortedPv[picked] || sortedPv[0];
-        result._bestmove = result.bestmove;
-        result.bestmove = pv.pv.split(" ")[0];
-        scores = sortedPv.slice(0, 10).map(x => x.score.value);
+      if (sortedPv.find(x => x.score.unit === "mate")) {
+        const firstScore = sortedPv[0].score.value;
+        sortedPv = sortedPv
+          .map(x => {
+            if (x.score.unit === "mate") {
+              const value = firstScore + x.score.value;
+              x.score = Object.assign({}, x, { mate: x.score.value, value });
+            }
+            return x;
+          })
+          .sort(cmpScore);
       }
 
-      console.log(
-        id,
-        "make pv move",
-        picked,
-        "score",
-        pv.score.value,
-        result.bestmove,
-        "depth",
-        depth,
-        "scores",
-        scores
-      );
+      let scores = sortedPv.slice(0, 25).map(x => x.score.value);
+      scores = util.limitScoresByStdDev({ scores, limit: 100, chance: 95 });
+      scores = util.balanceScores({ scores });
+      const moves = game ? game._chess.history().length : Infinity;
+
+      console.log("depth", depth, "scores", scores, "history moves", moves);
+      // if our best move score is below 5, take best move
+      // or if first and second pv move has a diff bigger than 200, then
+      // opponent most likely made a big blunder, take obvious move
+      // or if in first 6 moves and best move score is below 150, take best move
+      if (
+        scores.length <= 1 ||
+        scores[0] < 10 ||
+        util.firstDiffCheck({ scores, threshold: 150, chance: 85 }) ||
+        (scores[0] < 150 && moves <= 6)
+      ) {
+        picked = 0;
+        pickedMove = sortedPv[0];
+        console.log("picking first pv move", pickedMove, "bestmove", result.bestmove);
+      } else {
+        let playChances = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 10, 15];
+        if (scores.length < playChances.length) {
+          playChances = util.downSampleArray(playChances, scores.length);
+        }
+        console.log("playChances", playChances);
+        picked = util.pickChance(playChances);
+        // if (picked < 0 || picked > sortedPv.length) {
+        //   const chances = playChances;
+        //   for (let i = 0; i < sortedPv.length; i++) {
+        //     chances.push(100 / sortedPv.length);
+        //   }
+        //   picked = util.pickChance(chances);
+        // }
+        pickedMove = sortedPv[picked] || sortedPv[0];
+      }
+
+      result._bestmove = result.bestmove;
+      result.bestmove = pickedMove.san;
+
+      console.log(id, "make pv picked", picked, "score", pickedMove.score.value, result.bestmove);
+    } else {
+      console.log(id, "no multi pv to try after sorted, using best move", result.bestmove);
     }
   } else {
     console.log(id, "no viable pv to try, using bestmove", result.bestmove);
@@ -80,35 +98,19 @@ const makeBestMove = async (engine, id, depth) => {
 };
 
 const engines = {
-  stockfish1: {
-    name: "stockfish",
-    move: async engine => makeBestMove(engine, "stockfish1")
-  },
   stockfish: {
     name: "stockfish",
     initOptions: {
       MultiPV: 10
     },
-    move: async engine => makePvMove(engine, "stockfish")
-  },
-  irina: {
-    name: "irina",
-    move: async engine => makeBestMove(engine, "irina", 1)
-  },
-  komodo1: {
-    name: "komodo",
-    move: async engine => makeBestMove(engine, "komodo1")
+    move: async (engine, engOpts, game) => makePvMove({ engine, id: "stockfish", engOpts, game })
   },
   komodo: {
     name: "komodo",
     initOptions: {
       MultiPV: 10
     },
-    move: async engine => makePvMove(engine, "komodo")
-  },
-  amyan: {
-    name: "amyan",
-    move: async engine => makeBestMove(engine, "amyan", 1)
+    move: async (engine, engOpts, game) => makePvMove({ engine, id: "komodo", engOpts, game })
   }
 };
 
@@ -156,6 +158,6 @@ module.exports = {
   engines,
 
   strategy: {
-    default: ["stockfish1", "komodo1", "stockfish", "komodo", "amyan", "irina"]
+    default: ["stockfish"]
   }
 };
