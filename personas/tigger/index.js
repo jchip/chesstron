@@ -57,14 +57,11 @@ const makePvMove = async ({ engine, id, inDepth, game }) => {
         pickedMove = sortedPv[0];
         console.log("picking first pv move", pickedMove, "bestmove", result.bestmove);
       } else {
-        let playChances = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 15, 25];
+        // prettier-ignore
+        let playChances = [1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+          4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 15, 25];
         if (scores.length < playChances.length) {
-          const extraChances = playChances.slice(scores.length).reverse();
-          playChances = playChances.slice(0, scores.length);
-          extraChances.forEach((n, ix) => {
-            const k = playChances.length - ix - 1;
-            if (k >= 0) playChances[k] += n;
-          });
+          playChances = util.downSampleArray(playChances, scores.length);
         }
         console.log("playChances", playChances);
         picked = util.pickChance(playChances);
