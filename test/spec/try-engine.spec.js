@@ -13,12 +13,12 @@ describe("stockfish", function() {
   before(async () => {
     const manager = new EngineMgr();
     engines.b = {
-      engine: await manager.initEngine({ name: "houdini", id: "b" }),
-      options: { depth: 10, multiPV: 10 }
+      engine: await manager.initEngine({ name: "stockfish", id: "b" }),
+      options: { depth: 10 }
     };
     engines.w = {
       engine: await manager.initEngine({ name: "stockfish", id: "w" }),
-      options: { depth: 10, multiPV: 10 }
+      options: { depth: 10 }
     };
   });
 
@@ -88,4 +88,14 @@ describe("stockfish", function() {
       }
     }
   }).timeout(100000);
+
+  it("test engine multi pv from fen", async () => {
+    const fen = "rn1q1rk1/pp3pp1/bnpp1b1p/8/3P4/1PN2N1P/P1Q2PP1/RBB1R1K1 b - - 4 15";
+    const { engine } = engines.b;
+    engine.position(fen);
+    await engine.setoption("MultiPV", 10);
+    await engine.isready();
+    const result = await engine.go({ depth: 2 });
+    console.log(JSON.stringify(result, null, 2));
+  });
 });
