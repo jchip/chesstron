@@ -4,10 +4,10 @@ const PersonaStockfish = require("../persona-stockfish");
 const util = require("../../lib/util");
 
 const tigger = new PersonaStockfish({
-  depth: () => util.pickChance([4, 6, 10, 80], [8, 7, 6, 5]),
+  depth: () => util.pickChance([1, 1, 4, 4, 20, 20, 25, 25], [9, 8, 7, 6, 5, 4, 3, 2]),
   moveMinScore: -250,
   minBestScore: 5,
-  stdDevLimit: { limit: 100, chance: 90 },
+  stdDevLimit: { limit: 130, chance: 90 },
   minOpenLimit: { score: 150, moves: 6 },
   firstDiffParams: { threshold: 180, chance: 85 },
   playChances: [1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 15, 25]

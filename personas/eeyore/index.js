@@ -4,12 +4,12 @@ const PersonaStockfish = require("../persona-stockfish");
 const util = require("../../lib/util");
 
 const eeyore = new PersonaStockfish({
-  depth: () => util.pickChance([1, 1, 4, 4, 20, 20, 55], [9, 8, 7, 6, 5, 4, 3]),
+  depth: () => util.pickChance([1, 1, 4, 4, 20, 20, 25, 25], [8, 7, 6, 5, 4, 3, 2, 1]),
   moveMinScore: -300,
   minBestScore: 5,
   stdDevLimit: { limit: 150, chance: 90 },
   minOpenLimit: { score: 150, moves: 6 },
-  firstDiffParams: { threshold: 200, chance: 85 },
+  firstDiffParams: { threshold: 200, chance: 75 },
   playChances: [1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 10, 10, 15, 25]
 });
 

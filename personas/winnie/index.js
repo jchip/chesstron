@@ -4,7 +4,7 @@ const PersonaStockfish = require("../persona-stockfish");
 const util = require("../../lib/util");
 
 const winnie = new PersonaStockfish({
-  depth: () => util.pickChance([4, 6, 10, 80], [11, 10, 9, 7]),
+  depth: () => util.pickChance([1, 1, 4, 4, 20, 20, 25, 25], [10, 9, 8, 7, 6, 5, 4, 3]),
   moveMinScore: -200,
   minBestScore: 10,
   stdDevLimit: { limit: 100, chance: 95 },
