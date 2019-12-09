@@ -20,7 +20,9 @@ class PersonaStockfish {
     // the parameter to consider for comparing diff between best and first bad score
     // in order to force picking the best move
     this._firstDiffParams = options.firstDiffParams || { threshold: 150, chance: 85 };
-    this._playChances = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 10, 15];
+    // prettier-ignore
+    this._playChances = options.playChances || 
+      [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8, 10, 15];
     this._id = "stockfish";
   }
 
