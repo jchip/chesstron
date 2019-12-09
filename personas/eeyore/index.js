@@ -9,7 +9,7 @@ const eeyore = new PersonaStockfish({
   minBestScore: 5,
   stdDevLimit: { limit: 150, chance: 90 },
   minOpenLimit: { score: 150, moves: 6 },
-  firstDiffParams: { threshold: 200, chance: 75 },
+  firstDiffParams: { threshold: 185, chance: 85 },
   playChances: [1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 10, 10, 15, 25]
 });
 
