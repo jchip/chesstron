@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "electrode-archetype-njs-module-dev": "^3.0.1",
-    "electron": "^7.0.0",
+    "electron": "^11.5.0",
     "electron-packager": "^14.1.1",
     "electron-rebuild": "^1.8.4"
   },
